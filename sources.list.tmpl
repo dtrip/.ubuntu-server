@@ -1,0 +1,29 @@
+#------------------------------------------------------------------------------#
+#                            OFFICIAL UBUNTU REPOS                             #
+#------------------------------------------------------------------------------#
+
+
+###### Ubuntu Main Repos
+deb http://<COUNTRY_CODE>.archive.ubuntu.com/ubuntu/ <DISTRO> main restricted universe multiverse 
+deb-src http://<COUNTRY_CODE>.archive.ubuntu.com/ubuntu/ <DISTRO> main restricted universe multiverse 
+
+###### Ubuntu Update Repos
+deb http://<COUNTRY_CODE>.archive.ubuntu.com/ubuntu/ <DISTRO>-security main restricted universe multiverse 
+deb http://<COUNTRY_CODE>.archive.ubuntu.com/ubuntu/ <DISTRO>-updates main restricted universe multiverse 
+deb-src http://<COUNTRY_CODE>.archive.ubuntu.com/ubuntu/ <DISTRO>-security main restricted universe multiverse 
+deb-src http://<COUNTRY_CODE>.archive.ubuntu.com/ubuntu/ <DISTRO>-updates main restricted universe multiverse 
+
+###### Ubuntu Partner Repo
+deb http://archive.canonical.com/ubuntu <DISTRO> partner
+deb-src http://archive.canonical.com/ubuntu <DISTRO> partner
+
+###### Ubuntu Extras Repo
+deb http://extras.ubuntu.com/ubuntu <DISTRO> main
+deb-src http://extras.ubuntu.com/ubuntu <DISTRO> main
+
+
+deb http://deb.torproject.org/torproject.org <DISTRO> main
+#gpg --keyserver keys.gnupg.net --recv 886DDD89
+#gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | sudo apt-key add -
+
+
