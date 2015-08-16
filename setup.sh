@@ -53,9 +53,9 @@ if sudo apt-get install -qq -y $PKG;
     then log_end_msg 0 else log_end_msg 1
 fi
 
-log_daemon_msg "Install python pip packages"
-    if sudo pip -q install $PIP;
-then log_end_msg 0 else log_end_msg 1
+log_daemon_msg "Installing python pip packages"
+if sudo pip -q install $PIP;
+    then log_end_msg 0 else log_end_msg 1
 fi
 
 # refresh shell right quick
@@ -87,9 +87,8 @@ for GITURL in "${!GIT[@]}";
 do
     log_daemon_msg "Cloning $GITURL into ${GIT["$GITURL"]}"
     if sudo git clone -q $GITURL "${GIT["$GITURL"]}"; 
-    then log_end_msg 0 else log_end_msg 1
-   
-fi
+        then log_end_msg 0 else log_end_msg 1
+    fi
 done
 
 # if entered a username, will fix home permissions from sudo git clone repos
@@ -117,8 +116,8 @@ if cat powerline-status-func.txt >> ~/.zshrc;
 fi
 
 log_daemon_msg "Setting up rbenv environment variables ..."
-    if echo "export RBENV_ROOT=/usr/local/share/rbenv\nexport PATH=\"$RBENV_ROOT/bin:$PATH\"\neval \"$(rbenv init - zsh)\"\nsource $RBENV_ROOT/completions/rbenv.zsh" >> ~/.zshrc;
-then log_end_msg 0 else log_end_msg 1
+if echo "export RBENV_ROOT=/usr/local/share/rbenv\nexport PATH=\"$RBENV_ROOT/bin:$PATH\"\neval \"$(rbenv init - zsh)\"\nsource $RBENV_ROOT/completions/rbenv.zsh" >> ~/.zshrc;
+    then log_end_msg 0 else log_end_msg 1
 fi
 
 log_daemon_msg "Setting up ruby-build"
@@ -133,18 +132,19 @@ read -e -p "Enter ruby version to install [2.2.2]: " RUBYV
 if [ -z $RUBYV ]; then
     RUBYV='2.2.2'
 fi
-    log_daemon_msg "Installing ruby v${RUBYV}..."
-        if rbenv install $RUBYV; 
+
+log_daemon_msg "Installing ruby v${RUBYV}..."
+if rbenv install $RUBYV; 
     then log_end_msg 0 else log_end_msg 1
 fi
 
-    log_daemon_msg "setting global ruby version to ${RUBYV}..."
-        if rbenv global $RUBYV;
+log_daemon_msg "setting global ruby version to ${RUBYV}..."
+if rbenv global $RUBYV;
     then log_end_msg 0 else log_end_msg 1
 fi
 
-    log_daemon_msg "rbenv rehashing..."
-        if rbenv rehash; 
+log_daemon_msg "rbenv rehashing..."
+if rbenv rehash; 
     then log_end_msg 0 else log_end_msg 1
 fi
 
@@ -159,7 +159,7 @@ fi
 cd $MSFPATH;
 
 if sudo rbenv install 2.1.6;
-then log_end_msg 0 else log_end_msg 1
+    then log_end_msg 0 else log_end_msg 1
 fi
 
 if sudo gem install bundler;
@@ -167,7 +167,7 @@ if sudo gem install bundler;
 fi
 
 if sudo bundle install; 
-then log_end_msg 0 else log_end_msg 1
+    then log_end_msg 0 else log_end_msg 1
 fi
 
 if sudo bash -c 'for MSF in $(ls msf*); do ln -s /usr/local/share/metasploit-framework/$MSF /usr/local/bin/$MSF;done';
