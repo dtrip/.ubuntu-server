@@ -1,0 +1,3 @@
+# .ubuntu-server
+
+Setup scripts

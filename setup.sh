@@ -15,12 +15,15 @@ REL=$(lsb_release -cs)
 VER=$(lsb_release -sr)
 
 
+MSFPATH='/usr/local/share/metasploit-framework' # location of metapsploit installation
+MSFRVERSION='2.1.6' # ruby version to install for metapsloit
+
 # declares associative array
 declare -A GIT
 
 GIT=(
     ['git@github.com:dtrip/sqlmap.git']='/usr/local/share/sqlmap'
-    ['git@github.com:dtrip/metasploit-framework']='/usr/local/share/metasploit-framework'
+    ['git@github.com:dtrip/metasploit-framework']=$MSFPATH
     ['git@github.com:dtrip/commix.git']='/usr/local/share/commix'
     ['git@github.com:dtrip/websploit.git']='/usr/local/share/websploit'
     ['git@github.com:dtrip/vim.git']='~/.vim'
@@ -28,6 +31,7 @@ GIT=(
     ['git@github.com:dtrip/zshrc.git']='~/zshrc'
     ['git@github.com:dtrip/powerline-shell.git']='~/powerline-shell'
     ['git://github.com/sstephenson/rbenv.git']='/usr/local/share/rbenv'
+    ['git://github.com/wpscanteam/wpscan.git']='/usr/local/share/wpscan'
     ['git://github.com/sstephenson/ruby-build.git']='/usr/local/share/ruby-build'
 )
 
@@ -46,7 +50,6 @@ then log_end_msg 0 else log_end_msg 1 fi
 log_daemon_msg "Installing packages"
 if sudo apt-get install -qq -y $PKG; 
 then log_end_msg 0 else log_end_msg 1 fi
-
 
 log_daemon_msg "Install python pip packages"
 if sudo pip -q install $PIP;
@@ -67,6 +70,8 @@ if [ ! -z "$UNAME" ]; then
     then log_end_msg 0 else log_end_msg 1 fi
 fi
 
+# moves to users home directory
+cd ~/
 
 if sh -c "$(wget https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh -O -)";
 then log_end_msg 0 else log_end_msg 1 fi
@@ -84,6 +89,10 @@ done
 if [ ! -z "$UNAME" ]; then
     log_daemon_msg "Fixing /home permissions"
     if sudo chown $UNAME:$UNAME -R /home/$UNAME && sudo chmod 755 -R /home/$UNAME;
+    then log_end_msg 0 else log_end_msg 1 fi
+
+    # sets shell to zsh
+    if sed -i -e "s/\/home\/$UNAME:\/bin\/bash/\/home\/$UNAME:\/bin\/zsh/g" /etc/passwd;
     then log_end_msg 0 else log_end_msg 1 fi
 fi
 
@@ -104,16 +113,45 @@ log_daemon_msg "Setting up ruby-build"
 if cd /usr/local/share/ruby-build && sh install.sh; 
 then log_end_msg 0 else log_end_msg 1 fi
 
-log_daemon_msg "Running vim setup"
-if sh ~/.vim/install; 
-then log_end_msg 0 else log_end_msg 1 fi
+exec $SHELL
 
 read -e -p "Enter ruby version to install [2.2.2]: " RUBYV
 
+if [ -z $RUBYV ]; then
+    RUBYV='2.2.2'
+fi
+    log_daemon_msg "Installing ruby v${RUBYV}..."
+    if rbenv install $RUBYV; 
+    then log_end_msg 0 else log_end_msg 1 fi
+
+    log_daemon_msg "setting global ruby version to ${RUBYV}..."
+    if rbenv global $RUBYV;
+    then log_end_msg 0 else log_end_msg 1 fi
+
+    log_daemon_msg "rbenv rehashing..."
+    if rbenv rehash; 
+    then log_end_msg 0 else log_end_msg 1 fi
 
 read -e -p "Would you like to install Metasploit? [Y/n]: " MSF
 
 
+log_daemon_msg "Running vim setup"
+if sh ~/.vim/install; 
+then log_end_msg 0 else log_end_msg 1 fi
+
+cd $MSFPATH;
+
+if sudo rbenv install 2.1.6;
+then log_end_msg 0 else log_end_msg 1 fi
+
+if sudo gem install bundler;
+then log_end_msg 0 else log_end_msg 1 fi
+
+if sudo bundle install; 
+then log_end_msg 0 else log_end_msg 1 fi
+
+if sudo bash -c 'for MSF in $(ls msf*); do ln -s /usr/local/share/metasploit-framework/$MSF /usr/local/bin/$MSF;done';
+then log_end_msg 0 else log_end_msg 1 fi
 
 echo "Finished!"
 exit 0
