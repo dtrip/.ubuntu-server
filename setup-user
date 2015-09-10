@@ -1,0 +1,107 @@
+#!/bin/bash
+
+# Load the VERBOSE setting and other rcS variables
+. /lib/init/vars.sh
+
+# Define LSB log_* functions.
+# Depend on lsb-base (>= 3.2-14) to ensure that this file is present
+# and status_of_proc is working.
+. /lib/lsb/init-functions
+
+PWD=$(pwd)
+
+LOG="/tmp/ubuntu-server-user-setup"
+touch $LOG;
+
+# declares associative array
+declare -A GIT
+
+GIT=(
+    ['git@github.com:dtrip/vim.git']='~/.vim'
+    ['git@github.com:dtrip/tmux.git']='~/tmux'
+    ['git@github.com:dtrip/zshrc.git']='~/zshrc'
+    ['git@github.com:dtrip/powerline-shell.git']='~/powerline-shell'
+)
+
+log_daemon_msg "Checking if root"
+if [[ $EUID -eq 0 ]]; then
+    log_failure_msg "Do not run as root" 
+    exit 1
+fi
+
+cd ~
+
+log_daemon_msg "Fixing /home permissions"
+if sudo chown $UNAME:$UNAME -R /home/$UNAME >> $LOG && sudo chmod 644 -R /home/$UNAME >> $LOG;
+    then log_end_msg 0 else log_end_msg 1
+fi
+
+for GITURL in "${!GIT[@]}";
+do
+    log_daemon_msg "Cloning $GITURL into ${GIT["$GITURL"]}"
+    if sudo git clone -q $GITURL "${GIT["$GITURL"]}" >> $LOG;
+        then log_end_msg 0 else log_end_msg 1
+    fi
+done
+
+log_daemon_msg "Installing oh-my-zsh ..."
+if sh -c "$(wget https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh -O -)" >> $LOG;
+    then log_end_msg 0 else log_end_msg 1
+fi
+
+log_daemon_msg "backing up /etc/passwd file..."
+if sudo cp /etc/passwd /etc/passwd.bak >> $LOG;
+    then log_end_msg 0 else log_end_msg 1
+fi
+
+# sets shell to zsh
+log_daemon_msg "Setting ZSH as permanent shell for $UNAME ..."
+if sed -i "s#/home/$UNAME:/bin/bash#/home/$UNAME:/bin/zsh#" /etc/passwd >> $LOG;
+    then log_end_msg 0 else log_end_msg 1
+fi
+
+log_daemon_msg "Setting up zshrc aliases"
+if sh ~/zshrc/install >> $LOG;
+    then log_end_msg 0 else log_end_msg 1
+fi
+
+log_daemon_msg "Updating zshrc submodules "
+cd ~/zshrc
+if git submodule update --init >> $LOG; 
+    then log_end_msg 0 else log_end_msg 1
+fi
+
+log_daemon_msg "Adding powerline-shell zsh function"
+if cat powerline-status-func.txt >> ~/.zshrc; 
+    then log_end_msg 0 else log_end_msg 1
+fi
+
+log_daemon_msg "Setting up powerline shell"
+if ~/./powerline-shell/install.py >> $LOG;
+    then log_end_msg 0 else log_end_msg 1
+fi
+
+log_daemon_msg "Symlinking powerline-shell"
+if ln -s $HOME/powerline-shell/powerline-shell.py $HOME/powerline-shell.py >> $LOG;
+    then log_end_msg 0 else log_end_msg 1
+fi
+
+log_daemon_msg "Setting up tmux env"
+if sh ~/tmux/install >> $LOG;
+    then log_end_msg 0 else log_end_msg 1
+fi
+
+log_daemon_msg "Setting up rbenv environment variables ..."
+if echo "export RBENV_ROOT=/usr/local/share/rbenv\nexport PATH=\"$RBENV_ROOT/bin:$PATH\"\neval \"$(rbenv init - zsh)\"\nsource $RBENV_ROOT/completions/rbenv.zsh" >> ~/.zshrc;
+    then log_end_msg 0 else log_end_msg 1
+fi
+
+log_daemon_msg "Running vim setup"
+if sh ~/.vim/install >> $LOG; 
+    then log_end_msg 0 else log_end_msg 1
+fi
+
+exec $SHELL
+
+echo "Setup is now complete!!"
+exit 0

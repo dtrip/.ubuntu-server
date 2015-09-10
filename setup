@@ -1,0 +1,217 @@
+#!/bin/bash
+
+# Load the VERBOSE setting and other rcS variables
+. /lib/init/vars.sh
+
+# Define LSB log_* functions.
+# Depend on lsb-base (>= 3.2-14) to ensure that this file is present
+# and status_of_proc is working.
+. /lib/lsb/init-functions
+
+# Ubuntu's short release version name: trusty, utopic, etc..
+REL=$(lsb_release -cs)
+
+# Ubuntu's version number: 14.04, 14.10, 15.04 etc.
+VER=$(lsb_release -sr)
+
+# gets path of file being executed
+DIR=$(dirname $(readlink -e $0))
+
+PWD=$(pwd)
+
+SSHD="/etc/ssh/sshd_config"
+LOG="/tmp/ubuntu-server-setup"
+
+touch $LOG
+
+MSFPATH='/usr/local/share/metasploit-framework' # location of metapsploit installation
+MSFRVERSION='2.1.6' # ruby version to install for metapsloit
+
+# declares associative array
+declare -A GIT
+
+GIT=(
+    ['git@github.com:dtrip/sqlmap.git']='/usr/local/share/sqlmap'
+    ['git@github.com:dtrip/metasploit-framework']=$MSFPATH
+    ['git@github.com:dtrip/commix.git']='/usr/local/share/commix'
+    ['git@github.com:dtrip/websploit.git']='/usr/local/share/websploit'
+    ['git://github.com/sstephenson/rbenv.git']='/usr/local/share/rbenv'
+    ['git://github.com/wpscanteam/wpscan.git']='/usr/local/share/wpscan'
+    ['git://github.com/sstephenson/ruby-build.git']='/usr/local/share/ruby-build'
+)
+
+
+PKG='vim tmux python-pip build-essential libpcap-dev libssl-dev git git-extras git-core ack-grep libyaml-dev libreadline-dev libsqlite3-dev freetds-dev freetds-bin libpq-dev libpcre3-dev libpqxx-dev liblinear-dev subversion dnsutils autoconf libbison-dev htop fail2ban'
+PIP='powerline-status'
+
+
+log_daemon_msg "Checking if root"
+if [[ $EUID -ne 0 ]]; then
+    log_failure_msg "This script must be run as root" 
+    exit 1
+fi
+
+read -e -p "Please enter country code for apt sources.list " -i "[us]: " CCODE
+
+log_daemon_msg "backing up apt source file"
+if cp /etc/apt/sources.list /etc/apt/sources.list.bak >> $LOG;
+    then log_end_msg 0 else log_end_msg 1
+fi
+
+log_daemon_msg "Copying new sources.list template file..."
+if cp -f $DIR/sources.list.tmpl /etc/apt/sources.list >> $LOG;
+    then log_end_msg 0 else log_end_msg 1
+fi
+
+log_daemon_msg "Setting up sources file"
+if sed -i "s#<COUNTRY_CODE>#$CCODE#" /etc/apt/sources.list >> $LOG && sed -i "s#<DISTRO>#$REL#" /etc/apt/sources.list >> $LOG;
+    then log_end_msg 0 else log_end_msg 1
+fi
+
+# log_daemon_msg "Installing packages from Ubuntu Repositories... "
+
+log_daemon_msg "Updating package list"
+if sudo apt-get -qq -y update >> $LOG;
+    then log_end_msg 0 else log_end_msg 1
+fi
+
+log_daemon_msg "Installing packages"
+if sudo apt-get install -qq -y $PKG >> $LOG;
+    then log_end_msg 0 else log_end_msg 1
+fi
+
+log_daemon_msg "Installing python pip packages"
+if sudo pip -q install $PIP >> $LOG;
+    then log_end_msg 0 else log_end_msg 1
+fi
+
+
+for GITURL in "${!GIT[@]}";
+do
+    log_daemon_msg "Cloning $GITURL into ${GIT["$GITURL"]}"
+    if sudo git clone -q $GITURL "${GIT["$GITURL"]}" >> $LOG;
+        then log_end_msg 0 else log_end_msg 1
+    fi
+done
+
+
+# refresh shell right quick
+exec $SHELL
+
+read -e -p "Please enter your username to create new user - leave blank to skip: " UNAME
+
+if [ ! -z "$UNAME" ]; then
+    log_daemon_msg "Creating new user $UNAME ..."
+    if adduser $UNAME >> $LOG;
+        then log_end_msg 0 else log_end_msg 1
+    fi
+fi
+
+log_daemon_msg "Setting up ruby-build"
+if sh /usr/local/share/ruby-build/install.sh >> $LOG;
+    then log_end_msg 0 else log_end_msg 1
+fi
+
+exec $SHELL
+
+# exports for rbenv
+export RBENV_ROOT=/usr/local/share/rbenv
+export PATH="$RBENV_ROOT/bin:$PATH"
+eval "$(rbenv init -)"
+
+read -e -p "Enter ruby version to install [2.2.2]: " RUBYV
+
+if [ -z $RUBYV ]; then
+    RUBYV='2.2.2'
+fi
+
+log_daemon_msg "Installing ruby v${RUBYV}..."
+if rbenv install $RUBYV >> $LOG;
+    then log_end_msg 0 else log_end_msg 1
+fi
+
+log_daemon_msg "setting global ruby version to ${RUBYV}..."
+if rbenv global $RUBYV >> $LOG;
+    then log_end_msg 0 else log_end_msg 1
+fi
+
+log_daemon_msg "rbenv rehashing..."
+if rbenv rehash >> $LOG;
+    then log_end_msg 0 else log_end_msg 1
+fi
+
+read -e -p "Enter port number for SSH server [22]: " SSHPort
+
+# sets ssh port to 22 if nothing entered
+if [ -z $SSHPort ]; then
+    SSHPort = 22
+fi
+
+log_daemon_msg "Backing up sshd_config..."
+if cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak >> $LOG;
+    then log_end_msg 0 else log_end_msg 1
+fi
+
+log_daemon_msg "Setting new SSH port number..."
+if sed -i "s#Port 22#Port $SSHPort#" $SSHD  >> $LOG;
+    then log_end_msg 0 else log_end_msg 1
+fi
+
+# disables root login if a new user has been created
+if [ ! -z "$UNAME" ]; then
+    log_daemon_msg "Disabled root ssh login... "
+    if sed -i "s#PermitRootLogin yes#PermitRootLogin no#" $SSHD >> $LOG;
+        then log_end_msg 0 else log_end_msg 1
+    fi
+fi
+
+log_daemon_msg "Allowing port $SSHPort through firewall.."
+if ufw allow $SSHPort >> $LOG;
+    then log_end_msg 0 else log_end_msg 1
+fi
+
+log_daemon_msg "Restarting SSH Service..."
+if service ssh restart >> $LOG;
+    then log_end_msg 0 else log_end_msg 1
+fi
+
+log_daemon_msg "enabling firewall..."
+if ufw enable >> $LOG;
+    then log_end_msg 0 else log_end_msg 1
+fi
+
+read -e -p "Would you like to install Metasploit? [Y/n]: " MSF
+MSF=$(echo $MSF | tr 'a-z' 'A-Z')
+
+if [ "$MSF" = 'Y' ] || [ "$MSF" = 'YES' ] || [ -z $MSF ]; then
+    cd $MSFPATH;
+
+    log_daemon_msg "Installing ruby v$MSFRVERSION for Metasploit"
+    if rbenv install $MSFRVERSION >> $LOG;
+        then log_end_msg 0 else log_end_msg 1
+    fi
+
+    log_daemon_msg "Setting version $MSFRVERSION as local version for metasploit through rbenv"
+    if rbenv local $MSFRVERSION;
+        then log_end_msg 0 else log_end_msg 1
+    fi
+
+    log_daemon_msg "Installing bundler"
+    if gem install bundler >> $LOG;
+        then log_end_msg 0 else log_end_msg 1
+    fi
+
+    log_daemon_msg "Installing Metasploit gems"
+    if bundle install >> $LOG;
+        then log_end_msg 0 else log_end_msg 1
+    fi
+
+    log_daemon_msg "Setting up local bins for MSF"
+    if bash -c 'for MSF in $(ls msf*); do ln -s /usr/local/share/metasploit-framework/$MSF /usr/local/bin/$MSF;done' >> $LOG;
+        then log_end_msg 0 else log_end_msg 1
+    fi
+fi
+
+cd $PWD
+echo "Finished! Please switch to new user and run second half of setup!"
+exit 0
