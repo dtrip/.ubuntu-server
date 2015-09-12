@@ -21,8 +21,14 @@ PWD=$(pwd)
 
 SSHD="/etc/ssh/sshd_config"
 LOG="/tmp/ubuntu-server-setup"
+USERLOG="/tmp/ubuntu-server-user-setup"
 
+# ensures log files are created and writable
 touch $LOG
+chmod 666 $LOG
+
+touch $USERLOG
+chmod 666 $USERLOG
 
 MSFPATH='/usr/local/share/metasploit-framework' # location of metapsploit installation
 MSFRVERSION='2.1.6' # ruby version to install for metapsloit
@@ -65,7 +71,11 @@ fi
 
 log_daemon_msg "Setting up sources file"
 if sed -i "s#<COUNTRY_CODE>#$CCODE#" /etc/apt/sources.list >> $LOG && sed -i "s#<DISTRO>#$REL#" /etc/apt/sources.list >> $LOG;
-    then log_end_msg 0 else log_end_msg 1
+    then
+        log_end_msg 0
+    else
+        log_failure_msg "Up-to-date Apt sources is required"
+        exit 1
 fi
 
 # log_daemon_msg "Installing packages from Ubuntu Repositories... "
