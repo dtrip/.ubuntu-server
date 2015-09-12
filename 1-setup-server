@@ -37,10 +37,10 @@ MSFRVERSION='2.1.6' # ruby version to install for metapsloit
 declare -A GIT
 
 GIT=(
-    ['git@github.com:dtrip/sqlmap.git']='/usr/local/share/sqlmap'
-    ['git@github.com:dtrip/metasploit-framework']=$MSFPATH
-    ['git@github.com:dtrip/commix.git']='/usr/local/share/commix'
-    ['git@github.com:dtrip/websploit.git']='/usr/local/share/websploit'
+    ['https://github.com/dtrip/sqlmap']='/usr/local/share/sqlmap'
+    ['https://github.com/dtrip/metasploit-framework']=$MSFPATH
+    ['https://github.com/dtrip/commix']='/usr/local/share/commix'
+    ['https://github.com/dtrip/websploit']='/usr/local/share/websploit'
     ['git://github.com/sstephenson/rbenv.git']='/usr/local/share/rbenv'
     ['git://github.com/wpscanteam/wpscan.git']='/usr/local/share/wpscan'
     ['git://github.com/sstephenson/ruby-build.git']='/usr/local/share/ruby-build'
@@ -59,7 +59,6 @@ fi
 
 printf "\nPlease enter country code for apt sources.list [us]: "
 read CCODE
-
 
 log_daemon_msg "backing up apt source file"
 if cp /etc/apt/sources.list /etc/apt/sources.list.bak >> $LOG;
@@ -81,12 +80,12 @@ if sed -i "s#<COUNTRY_CODE>#$CCODE#" /etc/apt/sources.list >> $LOG && sed -i "s#
 fi
 
 log_daemon_msg "Adding apt key"
-if apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 437D05B5 3E5C1192;
+if apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 437D05B5 3E5C1192 >> $LOG;
     then log_end_msg 0 else log_end_msg 1
 fi
 
 log_daemon_msg "Adding key for tor"
-if gpg --keyserver keys.gnupg.net --recv 886DDD89 && gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | sudo apt-key add -;
+if gpg --keyserver keys.gnupg.net --recv 886DDD89 >> $LOG && gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | sudo apt-key add - >> $LOG;
     then log_end_msg 0 else log_end_msg 1
 fi
 

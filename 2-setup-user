@@ -18,10 +18,10 @@ touch $LOG;
 declare -A GIT
 
 GIT=(
-    ['git@github.com:dtrip/vim.git']='~/.vim'
-    ['git@github.com:dtrip/tmux.git']='~/tmux'
-    ['git@github.com:dtrip/zshrc.git']='~/zshrc'
-    ['git@github.com:dtrip/powerline-shell.git']='~/powerline-shell'
+    ['https://github.com/dtrip/vim']='~/.vim'
+    ['https://github.com/dtrip/tmux']='~/tmux'
+    ['https://github.com/dtrip/zshrc']='~/zshrc'
+    ['https://github.com/dtrip/powerline-shell']='~/powerline-shell'
 )
 
 log_daemon_msg "Checking if root"
