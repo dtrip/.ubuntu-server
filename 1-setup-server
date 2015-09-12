@@ -202,11 +202,6 @@ if service ssh restart >> $LOG;
     then log_end_msg 0 else log_end_msg 1
 fi
 
-log_daemon_msg "enabling firewall..."
-if ufw enable >> $LOG;
-    then log_end_msg 0 else log_end_msg 1
-fi
-
 printf "\nWould you like to install Metasploit? [Y/n]: "
 read MSF
 
@@ -242,5 +237,12 @@ if [ "$MSF" = 'Y' ] || [ "$MSF" = 'YES' ] || [ -z $MSF ]; then
 fi
 
 cd $PWD
+
+
+log_daemon_msg "enabling firewall..."
+if ufw enable >> $LOG;
+    then log_end_msg 0 else log_end_msg 1
+fi
+
 echo "Finished! Please switch to new user and run second half of setup!"
 exit 0
