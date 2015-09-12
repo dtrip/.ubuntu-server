@@ -9,6 +9,7 @@
 . /lib/lsb/init-functions
 
 PWD=$(pwd)
+UNAME=$(whoami)
 
 LOG="/tmp/ubuntu-server-user-setup"
 touch $LOG;

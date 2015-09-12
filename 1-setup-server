@@ -57,7 +57,9 @@ if [[ $EUID -ne 0 ]]; then
     exit 1
 fi
 
-read -e -p "Please enter country code for apt sources.list " -i "[us]: " CCODE
+printf "\nPlease enter country code for apt sources.list [us]: "
+read CCODE
+
 
 log_daemon_msg "backing up apt source file"
 if cp /etc/apt/sources.list /etc/apt/sources.list.bak >> $LOG;
@@ -76,6 +78,16 @@ if sed -i "s#<COUNTRY_CODE>#$CCODE#" /etc/apt/sources.list >> $LOG && sed -i "s#
     else
         log_failure_msg "Up-to-date Apt sources is required"
         exit 1
+fi
+
+log_daemon_msg "Adding apt key"
+if apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 437D05B5 3E5C1192;
+    then log_end_msg 0 else log_end_msg 1
+fi
+
+log_daemon_msg "Adding key for tor"
+if gpg --keyserver keys.gnupg.net --recv 886DDD89 && gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | sudo apt-key add -;
+    then log_end_msg 0 else log_end_msg 1
 fi
 
 # log_daemon_msg "Installing packages from Ubuntu Repositories... "
@@ -98,17 +110,21 @@ fi
 
 for GITURL in "${!GIT[@]}";
 do
-    log_daemon_msg "Cloning $GITURL into ${GIT["$GITURL"]}"
-    if sudo git clone -q $GITURL "${GIT["$GITURL"]}" >> $LOG;
-        then log_end_msg 0 else log_end_msg 1
+    # if folder does not exist, will checkout
+    if [ ! -d ${GIT["$GITURL"]} ]; then
+        log_daemon_msg "Cloning $GITURL into ${GIT["$GITURL"]}"
+        if sudo git clone -q $GITURL "${GIT["$GITURL"]}" >> $LOG;
+            then log_end_msg 0 else log_end_msg 1
+        fi
     fi
 done
 
 
 # refresh shell right quick
-exec $SHELL
+# $SHELL
 
-read -e -p "Please enter your username to create new user - leave blank to skip: " UNAME
+printf "\nPlease enter your username to create new user - leave blank to skip: "
+read UNAME
 
 if [ ! -z "$UNAME" ]; then
     log_daemon_msg "Creating new user $UNAME ..."
@@ -122,14 +138,15 @@ if sh /usr/local/share/ruby-build/install.sh >> $LOG;
     then log_end_msg 0 else log_end_msg 1
 fi
 
-exec $SHELL
+#$SHELL
 
 # exports for rbenv
 export RBENV_ROOT=/usr/local/share/rbenv
 export PATH="$RBENV_ROOT/bin:$PATH"
 eval "$(rbenv init -)"
 
-read -e -p "Enter ruby version to install [2.2.2]: " RUBYV
+printf "\nEnter ruby version to install [2.2.2]: "
+read RUBYV
 
 if [ -z $RUBYV ]; then
     RUBYV='2.2.2'
@@ -150,7 +167,8 @@ if rbenv rehash >> $LOG;
     then log_end_msg 0 else log_end_msg 1
 fi
 
-read -e -p "Enter port number for SSH server [22]: " SSHPort
+printf "\nEnter port number for SSH server [22]: "
+read SSHPort
 
 # sets ssh port to 22 if nothing entered
 if [ -z $SSHPort ]; then
@@ -190,7 +208,9 @@ if ufw enable >> $LOG;
     then log_end_msg 0 else log_end_msg 1
 fi
 
-read -e -p "Would you like to install Metasploit? [Y/n]: " MSF
+printf "\nWould you like to install Metasploit? [Y/n]: "
+read MSF
+
 MSF=$(echo $MSF | tr 'a-z' 'A-Z')
 
 if [ "$MSF" = 'Y' ] || [ "$MSF" = 'YES' ] || [ -z $MSF ]; then
