@@ -1,28 +1,6 @@
 #!/bin/bash
 
-# Load the VERBOSE setting and other rcS variables
-. /lib/init/vars.sh
-
-# Define LSB log_* functions.
-# Depend on lsb-base (>= 3.2-14) to ensure that this file is present
-# and status_of_proc is working.
-. /lib/lsb/init-functions
-
-PWD=$(pwd)
-UNAME=$(whoami)
-
-LOG="/tmp/ubuntu-server-user-setup"
-touch $LOG;
-
-# declares associative array
-declare -A GIT
-
-GIT=(
-    ['https://github.com/dtrip/vim']='~/.vim'
-    ['https://github.com/dtrip/tmux']='~/tmux'
-    ['https://github.com/dtrip/zshrc']='~/zshrc'
-    ['https://github.com/dtrip/powerline-shell']='~/powerline-shell'
-)
+source src/vars
 
 log_daemon_msg "Checking if root"
 if [[ $EUID -eq 0 ]]; then
@@ -37,10 +15,10 @@ if sudo chown $UNAME:$UNAME -R /home/$UNAME >> $LOG && sudo chmod 644 -R /home/$
     then log_end_msg 0 else log_end_msg 1
 fi
 
-for GITURL in "${!GIT[@]}";
+for GITURL in "${!USERGIT[@]}";
 do
-    log_daemon_msg "Cloning $GITURL into ${GIT["$GITURL"]}"
-    if sudo git clone -q $GITURL "${GIT["$GITURL"]}" >> $LOG;
+    log_daemon_msg "Cloning $GITURL into ${USERGIT["$GITURL"]}"
+    if sudo git clone -q $GITURL "${USERGIT["$GITURL"]}" >> $LOG;
         then log_end_msg 0 else log_end_msg 1
     fi
 done

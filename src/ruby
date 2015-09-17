@@ -1,0 +1,11 @@
+#!/bin/bash
+source vars
+
+log_daemon_msg "Creating ruby group"
+if addgroup ruby >> $LOG;
+    then log_end_msg 0 else log_end_msg 1
+fi
+
+# usermod USERNAME -aG ruby
+# newgrp ruby
+

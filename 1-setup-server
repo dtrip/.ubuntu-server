@@ -1,55 +1,6 @@
 #!/bin/bash
 
-# Load the VERBOSE setting and other rcS variables
-. /lib/init/vars.sh
-
-# Define LSB log_* functions.
-# Depend on lsb-base (>= 3.2-14) to ensure that this file is present
-# and status_of_proc is working.
-. /lib/lsb/init-functions
-
-# Ubuntu's short release version name: trusty, utopic, etc..
-REL=$(lsb_release -cs)
-
-# Ubuntu's version number: 14.04, 14.10, 15.04 etc.
-VER=$(lsb_release -sr)
-
-# gets path of file being executed
-DIR=$(dirname $(readlink -e $0))
-
-PWD=$(pwd)
-
-SSHD="/etc/ssh/sshd_config"
-LOG="/tmp/ubuntu-server-setup"
-USERLOG="/tmp/ubuntu-server-user-setup"
-
-# ensures log files are created and writable
-touch $LOG
-chmod 666 $LOG
-
-touch $USERLOG
-chmod 666 $USERLOG
-
-MSFPATH='/usr/local/share/metasploit-framework' # location of metapsploit installation
-MSFRVERSION='2.1.6' # ruby version to install for metapsloit
-
-# declares associative array
-declare -A GIT
-
-GIT=(
-    ['https://github.com/dtrip/sqlmap']='/usr/local/share/sqlmap'
-    ['https://github.com/dtrip/metasploit-framework']=$MSFPATH
-    ['https://github.com/dtrip/commix']='/usr/local/share/commix'
-    ['https://github.com/dtrip/websploit']='/usr/local/share/websploit'
-    ['git://github.com/sstephenson/rbenv.git']='/usr/local/share/rbenv'
-    ['git://github.com/wpscanteam/wpscan.git']='/usr/local/share/wpscan'
-    ['git://github.com/sstephenson/ruby-build.git']='/usr/local/share/ruby-build'
-)
-
-
-PKG='vim tmux python-pip build-essential libpcap-dev libssl-dev git git-extras git-core ack-grep libyaml-dev libreadline-dev libsqlite3-dev freetds-dev freetds-bin libpq-dev libpcre3-dev libpqxx-dev liblinear-dev subversion dnsutils autoconf libbison-dev htop fail2ban'
-PIP='powerline-status'
-
+source src/vars
 
 log_daemon_msg "Checking if root"
 if [[ $EUID -ne 0 ]]; then
@@ -66,7 +17,7 @@ if cp /etc/apt/sources.list /etc/apt/sources.list.bak >> $LOG;
 fi
 
 log_daemon_msg "Copying new sources.list template file..."
-if cp -f $DIR/sources.list.tmpl /etc/apt/sources.list >> $LOG;
+if cp -f $DIR/templates/sources.list.tmpl /etc/apt/sources.list >> $LOG;
     then log_end_msg 0 else log_end_msg 1
 fi
 
