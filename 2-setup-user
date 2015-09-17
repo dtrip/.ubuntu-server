@@ -72,10 +72,10 @@ if git submodule update --init >> $LOG;
     then log_end_msg 0 else log_end_msg 1
 fi
 
-log_daemon_msg "Adding powerline-shell zsh function"
-if cat powerline-status-func.txt >> ~/.zshrc; 
-    then log_end_msg 0 else log_end_msg 1
-fi
+# log_daemon_msg "Adding powerline-shell zsh function"
+# if cat powerline-status-func.txt >> ~/.zshrc; 
+#     then log_end_msg 0 else log_end_msg 1
+# fi
 
 log_daemon_msg "Setting up powerline shell"
 if ~/./powerline-shell/install.py >> $LOG;
@@ -92,10 +92,10 @@ if sh ~/tmux/install >> $LOG;
     then log_end_msg 0 else log_end_msg 1
 fi
 
-log_daemon_msg "Setting up rbenv environment variables ..."
-if echo "export RBENV_ROOT=/usr/local/share/rbenv\nexport PATH=\"$RBENV_ROOT/bin:$PATH\"\neval \"$(rbenv init - zsh)\"\nsource $RBENV_ROOT/completions/rbenv.zsh" >> ~/.zshrc;
-    then log_end_msg 0 else log_end_msg 1
-fi
+# log_daemon_msg "Setting up rbenv environment variables ..."
+# if echo "export RBENV_ROOT=/usr/local/share/rbenv\nexport PATH=\"$RBENV_ROOT/bin:$PATH\"\neval \"$(rbenv init - zsh)\"\nsource $RBENV_ROOT/completions/rbenv.zsh" >> ~/.zshrc;
+#     then log_end_msg 0 else log_end_msg 1
+# fi
 
 log_daemon_msg "Running vim setup"
 if sh ~/.vim/install >> $LOG; 
