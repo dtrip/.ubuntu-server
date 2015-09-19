@@ -1,0 +1,25 @@
+#!/bin/bash
+
+SSHPort=$1
+
+DIR=$(dirname $(readlink -e $0)) 
+source $DIR/vars
+
+printf "\nWould you like to enable UFW? [Y/n]:"
+read UFW
+
+UFW=$(echo $UFW | tr 'a-z' 'A-Z')
+
+if [ "$UFW" = 'Y' ] || [ "$UFW" = 'YES' ] || [ -z $UFW ]; then
+
+    log_daemon_msg "Allowing port $SSHPort through firewall.."
+    if ufw allow $SSHPort >> $LOG;
+        then log_end_msg 0 else log_end_msg 1
+    fi
+
+
+    log_daemon_msg "enabling firewall..."
+    if ufw enable >> $LOG;
+        then log_end_msg 0 else log_end_msg 1
+    fi
+fi

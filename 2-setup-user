@@ -1,6 +1,7 @@
 #!/bin/bash
 
-source src/vars
+DIR=$(dirname $(readlink -e $0)) 
+source $DIR/src/vars
 
 log_daemon_msg "Checking if root"
 if [[ $EUID -eq 0 ]]; then
@@ -11,15 +12,18 @@ fi
 cd ~
 
 log_daemon_msg "Fixing /home permissions"
-if sudo chown $UNAME:$UNAME -R /home/$UNAME >> $LOG && sudo chmod 644 -R /home/$UNAME >> $LOG;
+if sudo chown $UNAME:$UNAME -R /home/$UNAME >> $LOG;
     then log_end_msg 0 else log_end_msg 1
 fi
 
 for GITURL in "${!USERGIT[@]}";
 do
-    log_daemon_msg "Cloning $GITURL into ${USERGIT["$GITURL"]}"
-    if sudo git clone -q $GITURL "${USERGIT["$GITURL"]}" >> $LOG;
-        then log_end_msg 0 else log_end_msg 1
+    # if folder does not exist, will checkout
+    if [[ ! -d ${USERGIT["$GITURL"]} ]]; then
+        log_daemon_msg "Cloning $GITURL into ${USERGIT["$GITURL"]}"
+        if git clone -q $GITURL "${USERGIT["$GITURL"]}" >> $LOG;
+            then log_end_msg 0 else log_end_msg 1
+        fi
     fi
 done
 
@@ -35,7 +39,7 @@ fi
 
 # sets shell to zsh
 log_daemon_msg "Setting ZSH as permanent shell for $UNAME ..."
-if sed -i "s#/home/$UNAME:/bin/bash#/home/$UNAME:/bin/zsh#" /etc/passwd >> $LOG;
+if sudo sed -i "s#/home/$UNAME:/bin/bash#/home/$UNAME:/bin/zsh#" /etc/passwd >> $LOG;
     then log_end_msg 0 else log_end_msg 1
 fi
 
@@ -80,7 +84,10 @@ if sh ~/.vim/install >> $LOG;
     then log_end_msg 0 else log_end_msg 1
 fi
 
-exec $SHELL
+hash -r
+$SHELL
 
-echo "Setup is now complete!!"
+cd $PWD
+
+echo "Setup is now complete!! You should probably reboot"
 exit 0

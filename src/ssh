@@ -1,0 +1,43 @@
+#!/bin/bash
+
+DIR=$(dirname $(readlink -e $0)) 
+source $DIR/vars
+
+# prompts user for ssh port if not defined
+if [ -z $1 ]; then
+    printf "\nEnter port number for SSH server [22]: "
+    read SSHPort
+else
+    SSHPort=$1
+fi
+
+# sets ssh port to 22 if nothing entered
+if [ -z $SSHPort ]; then
+    SSHPort = 22
+fi
+
+log_daemon_msg "Backing up sshd_config..."
+if cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak >> $LOG;
+    then log_end_msg 0 else log_end_msg 1
+fi
+
+log_daemon_msg "Setting new SSH port number..."
+if sed -i "s#Port 22#Port $SSHPort#" $SSHD  >> $LOG;
+    then log_end_msg 0 else log_end_msg 1
+fi
+
+# disables root login if a new user has been created
+if [ ! -z "$UNAME" ]; then
+    log_daemon_msg "Disabled root ssh login... "
+    if sed -i "s#PermitRootLogin yes#PermitRootLogin no#" $SSHD >> $LOG;
+        then log_end_msg 0 else log_end_msg 1
+    fi
+fi
+
+log_daemon_msg "Restarting SSH Service..."
+if service ssh restart >> $LOG;
+    then log_end_msg 0 else log_end_msg 1
+fi
+
+
+

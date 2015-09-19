@@ -15,21 +15,17 @@ REL=$(lsb_release -cs)
 VER=$(lsb_release -sr)
 
 # gets path of file being executed
-DIR=$(dirname $(dirname $(readlink -e $0)))
+DIR=$(dirname $(readlink -e $0))
 
 PWD=$(pwd)
 
 SSHD="/etc/ssh/sshd_config"
 LOG="/tmp/ubuntu-server-setup"
-# USERLOG="/tmp/ubuntu-server-user-setup"
 UNAME=$(whoami)
 
 # ensures log files are created and writable
 touch $LOG
 chmod 666 $LOG
-
-touch $USERLOG
-chmod 666 $USERLOG
 
 MSFPATH='/usr/local/share/metasploit-framework' # location of metapsploit installation
 MSFRVERSION='2.1.6' # ruby version to install for metapsloit
@@ -58,7 +54,9 @@ USERGIT=(
 )
 
 
-PKG='vim tmux python-pip build-essential libpcap-dev libssl-dev git git-extras git-core ack-grep libyaml-dev libreadline-dev libsqlite3-dev freetds-dev freetds-bin libpq-dev libpcre3-dev libpqxx-dev liblinear-dev subversion dnsutils autoconf libbison-dev htop fail2ban'
-PIP='powerline-status'
+PKG='vim tmux python-pip build-essential libpcap-dev libssl-dev git git-extras git-core ack-grep libyaml-dev libreadline-dev libsqlite3-dev freetds-dev freetds-bin libpq-dev libpcre3-dev libpqxx-dev liblinear-dev subversion dnsutils autoconf libbison-dev htop fail2ban zsh trash-cli iptraf iftop nethogs chkrootkit rkhunter python-dev'
+PIP='powerline-status netifaces'
 
+#name of group for ruby users
+RUBYGROUP='ruby'
 

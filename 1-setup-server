@@ -1,6 +1,7 @@
 #!/bin/bash
 
-source src/vars
+DIR=$(dirname $(readlink -e $0)) 
+source $DIR/src/vars
 
 log_daemon_msg "Checking if root"
 if [[ $EUID -ne 0 ]]; then
@@ -61,7 +62,7 @@ fi
 for GITURL in "${!GIT[@]}";
 do
     # if folder does not exist, will checkout
-    if [ ! -d ${GIT["$GITURL"]} ]; then
+    if [[ ! -d ${GIT["$GITURL"]} ]]; then
         log_daemon_msg "Cloning $GITURL into ${GIT["$GITURL"]}"
         if sudo git clone -q $GITURL "${GIT["$GITURL"]}" >> $LOG;
             then log_end_msg 0 else log_end_msg 1
@@ -88,70 +89,10 @@ if sh /usr/local/share/ruby-build/install.sh >> $LOG;
     then log_end_msg 0 else log_end_msg 1
 fi
 
-#$SHELL
-
-# exports for rbenv
-export RBENV_ROOT=/usr/local/share/rbenv
-export PATH="$RBENV_ROOT/bin:$PATH"
-eval "$(rbenv init -)"
-
-printf "\nEnter ruby version to install [2.2.2]: "
-read RUBYV
-
-if [ -z $RUBYV ]; then
-    RUBYV='2.2.2'
-fi
-
-log_daemon_msg "Installing ruby v${RUBYV}..."
-if rbenv install $RUBYV >> $LOG;
-    then log_end_msg 0 else log_end_msg 1
-fi
-
-log_daemon_msg "setting global ruby version to ${RUBYV}..."
-if rbenv global $RUBYV >> $LOG;
-    then log_end_msg 0 else log_end_msg 1
-fi
-
-log_daemon_msg "rbenv rehashing..."
-if rbenv rehash >> $LOG;
-    then log_end_msg 0 else log_end_msg 1
-fi
-
 printf "\nEnter port number for SSH server [22]: "
 read SSHPort
 
-# sets ssh port to 22 if nothing entered
-if [ -z $SSHPort ]; then
-    SSHPort = 22
-fi
-
-log_daemon_msg "Backing up sshd_config..."
-if cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak >> $LOG;
-    then log_end_msg 0 else log_end_msg 1
-fi
-
-log_daemon_msg "Setting new SSH port number..."
-if sed -i "s#Port 22#Port $SSHPort#" $SSHD  >> $LOG;
-    then log_end_msg 0 else log_end_msg 1
-fi
-
-# disables root login if a new user has been created
-if [ ! -z "$UNAME" ]; then
-    log_daemon_msg "Disabled root ssh login... "
-    if sed -i "s#PermitRootLogin yes#PermitRootLogin no#" $SSHD >> $LOG;
-        then log_end_msg 0 else log_end_msg 1
-    fi
-fi
-
-log_daemon_msg "Allowing port $SSHPort through firewall.."
-if ufw allow $SSHPort >> $LOG;
-    then log_end_msg 0 else log_end_msg 1
-fi
-
-log_daemon_msg "Restarting SSH Service..."
-if service ssh restart >> $LOG;
-    then log_end_msg 0 else log_end_msg 1
-fi
+exec $DIR/src/ssh $SSHPort
 
 printf "\nWould you like to install Metasploit? [Y/n]: "
 read MSF
@@ -187,13 +128,9 @@ if [ "$MSF" = 'Y' ] || [ "$MSF" = 'YES' ] || [ -z $MSF ]; then
     fi
 fi
 
+exec $DIR/src/ufw $SSHPort
+
 cd $PWD
-
-
-log_daemon_msg "enabling firewall..."
-if ufw enable >> $LOG;
-    then log_end_msg 0 else log_end_msg 1
-fi
 
 echo "Finished! Please switch to new user and run second half of setup!"
 exit 0

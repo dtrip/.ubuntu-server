@@ -1,10 +1,46 @@
 #!/bin/bash
-source vars
 
-log_daemon_msg "Creating ruby group"
-if addgroup ruby >> $LOG;
+DIR=$(dirname $(readlink -e $0)) 
+source $DIR/vars
+
+# exports for rbenv
+export RBENV_ROOT=/usr/local/share/rbenv
+export PATH="$RBENV_ROOT/bin:$PATH"
+eval "$(rbenv init -)"
+
+
+
+#checks if ruby group exists - creates if not
+if [ -z $(egrep -i "^$RUBYGROUP" /etc/group) ]; then
+    log_daemon_msg "Creating ruby group"
+    if addgroup ruby >> $LOG;
+        then log_end_msg 0 else log_end_msg 1
+    fi
+fi
+
+
+printf "\nEnter ruby version to install [2.2.2]: "
+read RUBYV
+
+if [ -z $RUBYV ]; then
+    RUBYV='2.2.2'
+fi
+
+log_daemon_msg "Installing ruby v${RUBYV}..."
+if rbenv install $RUBYV >> $LOG;
     then log_end_msg 0 else log_end_msg 1
 fi
+
+log_daemon_msg "setting global ruby version to ${RUBYV}..."
+if rbenv global $RUBYV >> $LOG;
+    then log_end_msg 0 else log_end_msg 1
+fi
+
+log_daemon_msg "rbenv rehashing..."
+if rbenv rehash >> $LOG;
+    then log_end_msg 0 else log_end_msg 1
+fi
+
 
 # usermod USERNAME -aG ruby
 # newgrp ruby
