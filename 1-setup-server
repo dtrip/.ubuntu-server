@@ -7,6 +7,8 @@ log_daemon_msg "Checking if root"
 if [[ $EUID -ne 0 ]]; then
     log_failure_msg "This script must be run as root" 
     exit 1
+else
+    log_daemon_msg 0
 fi
 
 printf "\nPlease enter country code for apt sources.list [us]: "
@@ -132,5 +134,5 @@ exec $DIR/src/ufw $SSHPort
 
 cd $PWD
 
-echo "Finished! Please switch to new user and run second half of setup!"
+echo "Finished! Please switch to new user and run second half of setup!\nExample: bash $DIR/2-setup-user"
 exit 0

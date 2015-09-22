@@ -38,9 +38,9 @@ GIT=(
     ['https://github.com/dtrip/metasploit-framework']=$MSFPATH
     ['https://github.com/dtrip/commix']='/usr/local/share/commix'
     ['https://github.com/dtrip/websploit']='/usr/local/share/websploit'
-    ['git://github.com/sstephenson/rbenv.git']='/usr/local/share/rbenv'
-    ['git://github.com/wpscanteam/wpscan.git']='/usr/local/share/wpscan'
-    ['git://github.com/sstephenson/ruby-build.git']='/usr/local/share/ruby-build'
+    ['https://github.com/sstephenson/rbenv.git']='/usr/local/share/rbenv'
+    ['https://github.com/wpscanteam/wpscan.git']='/usr/local/share/wpscan'
+    ['https://github.com/sstephenson/ruby-build.git']='/usr/local/share/ruby-build'
 )
 
 # declares associative array
