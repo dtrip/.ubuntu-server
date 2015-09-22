@@ -57,7 +57,7 @@ USERGIT=(
 
 
 PKG='vim tmux python-pip build-essential libpcap-dev libssl-dev git git-extras git-core ack-grep libyaml-dev libreadline-dev libsqlite3-dev freetds-dev freetds-bin libpq-dev libpcre3-dev libpqxx-dev liblinear-dev subversion dnsutils autoconf libbison-dev htop fail2ban zsh trash-cli iptraf iftop nethogs chkrootkit rkhunter python-dev python-pycurl'
-PIP='powerline-status netifaces'
+PIP='powerline-status netifaces slowloris'
 
 #name of group for ruby users
 RUBYGROUP='ruby'
