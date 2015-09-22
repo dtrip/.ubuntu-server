@@ -34,6 +34,7 @@ MSFRVERSION='2.1.6' # ruby version to install for metapsloit
 declare -A GIT
 
 GIT=(
+    ['https://github.com/epsylon/ufonet.git']='/usr/local/share/ufonet'
     ['https://github.com/dtrip/sqlmap']='/usr/local/share/sqlmap'
     ['https://github.com/dtrip/metasploit-framework']=$MSFPATH
     ['https://github.com/dtrip/commix']='/usr/local/share/commix'
@@ -41,6 +42,7 @@ GIT=(
     ['https://github.com/sstephenson/rbenv.git']='/usr/local/share/rbenv'
     ['https://github.com/wpscanteam/wpscan.git']='/usr/local/share/wpscan'
     ['https://github.com/sstephenson/ruby-build.git']='/usr/local/share/ruby-build'
+    ['https://github.com/Anonymous-Dev/Pyloris.git']='/usr/local/share/pyloris'
 )
 
 # declares associative array
@@ -54,7 +56,7 @@ USERGIT=(
 )
 
 
-PKG='vim tmux python-pip build-essential libpcap-dev libssl-dev git git-extras git-core ack-grep libyaml-dev libreadline-dev libsqlite3-dev freetds-dev freetds-bin libpq-dev libpcre3-dev libpqxx-dev liblinear-dev subversion dnsutils autoconf libbison-dev htop fail2ban zsh trash-cli iptraf iftop nethogs chkrootkit rkhunter python-dev'
+PKG='vim tmux python-pip build-essential libpcap-dev libssl-dev git git-extras git-core ack-grep libyaml-dev libreadline-dev libsqlite3-dev freetds-dev freetds-bin libpq-dev libpcre3-dev libpqxx-dev liblinear-dev subversion dnsutils autoconf libbison-dev htop fail2ban zsh trash-cli iptraf iftop nethogs chkrootkit rkhunter python-dev python-pycurl'
 PIP='powerline-status netifaces'
 
 #name of group for ruby users

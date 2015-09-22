@@ -91,6 +91,13 @@ if sh /usr/local/share/ruby-build/install.sh >> $LOG;
     then log_end_msg 0 else log_end_msg 1
 fi
 
+log_daemon_msg "Downloading ufonet zombies"
+if python /usr/local/share/ufonet/ufonet/ufonet --download-zombies >> $LOG;
+if sh /usr/local/share/ruby-build/install.sh >> $LOG;
+    then log_end_msg 0 else log_end_msg 1
+fi
+
+
 printf "\nEnter port number for SSH server [22]: "
 read SSHPort
 
