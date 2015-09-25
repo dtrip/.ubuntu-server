@@ -45,11 +45,10 @@ if apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 437D05B5 3E5C1192 >>
 fi
 
 log_daemon_msg "Adding key for tor"
-if gpg --keyserver keys.gnupg.net --recv 886DDD89 >> $LOG && gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | apt-key add - >> $LOG 2>&1;
+if gpg --keyserver keys.gnupg.net --recv 886DDD89 >> $LOG 2>&1 && gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | apt-key add - >> $LOG 2>&1;
     then log_end_msg 0 else log_end_msg 1
 fi
 
-#TODO test these functions
 ## setup default apt config stuff
 log_daemon_msg "Setting potsfix default hostname: $HOSTNAME"
 if debconf-set-selections <<< "postfix postfix/mailname string $HOSTNAME" >> $LOG 2>&1; 
@@ -79,7 +78,7 @@ if pip -q install $PIP >> $LOG 2>&1;
     then log_end_msg 0 else log_end_msg 1
 fi
 
-
+# Clones girl URL's
 for GITURL in "${!GIT[@]}";
 do
     # if folder does not exist, will checkout
@@ -91,6 +90,17 @@ do
     fi
 done
 
+# checks out SVNs
+for SVNURL in "${!SVN[@]}";
+do
+    # if folder does not exist, will checkout
+    if [[ ! -d ${SVN["$SVNURL"]} ]]; then
+        log_daemon_msg "Checking out $SVNURL into ${SVN["$SVNURL"]}"
+        if svn --quiet checkout $SVNURL "${SVN["$SVNURL"]}" >> $LOG 2>&1;
+            then log_end_msg 0 else log_end_msg 1
+        fi
+    fi  
+done
 
 # refresh shell right quick
 # $SHELL
@@ -158,6 +168,7 @@ if [ "$MSF" = 'Y' ] || [ "$MSF" = 'YES' ] || [ -z $MSF ]; then
     fi
 fi
 
+exec $DIR/src/nmap
 exec $DIR/src/ufw $SSHPort
 exec $DIR/src/bins
 

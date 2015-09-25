@@ -33,12 +33,16 @@ HOSTNAME=$(hostname)
 touch $LOG
 chmod 666 $LOG
 
-MSFPATH='/usr/local/share/metasploit-framework' # location of metapsploit installation
-MSFRVERSION='2.1.6' # ruby version to install for metapsloit
+MSFPATH='/usr/local/share/metasploit-framework'         # location of metapsploit installation
+NMAPPATH='/usr/local/share/nmap'                        # location of nmap installation
+MSFRVERSION='2.1.6'                                     # ruby version to install for metapsloit
+
+NMAPURL='https://svn.nmap.org/nmap-releases/nmap-6.47/' # SVN URL of nmap
 
 # declares associative array
 declare -A GIT
 
+# array of git repos root user will clone and or install
 GIT=(
     ['https://github.com/epsylon/ufonet.git']='/usr/local/share/ufonet'
     ['https://github.com/dtrip/sqlmap']='/usr/local/share/sqlmap'
@@ -51,9 +55,18 @@ GIT=(
     ['https://github.com/Anonymous-Dev/Pyloris.git']='/usr/local/share/pyloris'
 )
 
+# SVN repo's root user will checkout and or isntall
+delcare -A SVN
+
+SVN=(
+    [$NMAPURL]='/usr/local/src'
+)
+
+
 # declares associative array
 declare -A USERGIT
 
+# user packages
 USERGIT=(
     ['https://github.com/dtrip/vim']='~/.vim'
     ['https://github.com/dtrip/tmux']='~/tmux'
@@ -62,7 +75,7 @@ USERGIT=(
 )
 
 
-PKG='vim tmux python-pip build-essential libpcap-dev libssl-dev git git-extras git-core ack-grep libyaml-dev libreadline-dev libsqlite3-dev freetds-dev freetds-bin libpq-dev libpcre3-dev libpqxx-dev liblinear-dev subversion dnsutils autoconf libbison-dev htop fail2ban zsh trash-cli iptraf iftop nethogs chkrootkit rkhunter python-dev python-pycurl'
+PKG='vim tmux python-pip build-essential libpcap-dev libssl-dev git git-extras git-core ack-grep libyaml-dev libreadline-dev libsqlite3-dev freetds-dev freetds-bin libpq-dev libpcre3-dev libpqxx-dev liblinear-dev subversion dnsutils autoconf libbison-dev htop fail2ban zsh trash-cli iptraf iftop nethogs chkrootkit rkhunter python-dev python-pycurl libbz2-dev'
 PIP='powerline-status netifaces slowloris'
 
 #name of group for ruby users

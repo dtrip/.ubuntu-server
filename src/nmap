@@ -1,0 +1,44 @@
+#!/bin/bash
+
+if [[ ! $(which nmap) ]]; then
+ 
+    printf "\nWould you like to install nmap? [Y/n]: "
+    read INMAP
+   
+    INMAP=$(echo $INMAP | tr 'a-z' 'A-Z')
+
+    # if they choose to isnstall
+    if [ "$INMAP" = 'Y' ] || [ "$INMAP" = 'YES' ] || [ -z $INMAP ]; then
+
+        # checks to ensure nmap was checked out
+        if [[ ! -d $NMAPPATH ]]; then
+        
+            log_daemon_msg "Checking out nmap"
+
+            if svn --quiet checkout $NMAPURL $NMAPPATH >> $LOG 2>&1;
+                then log_end_msg 0 else log_end_msg 1
+            fi
+        fi # end of checkout check
+
+
+        cd $NMAPPATH;
+
+        # configure
+        log_daemon_msg "Configuring Nmap"
+        if ./configure >> $LOG 2>&1;
+           then log_end_msg 0 else log_end_msg 1
+        fi
+
+        # exec make
+        log_daemon_msg "Compiling Nmap"
+        if make >> $LOG 2>&1;
+           then log_end_msg 0 else log_end_msg 1
+        fi
+
+        # runs checkinstall to create deb package
+        log_daemon_msg "Installing nmap to system"
+        if sudo checkinstall --install --require "libc6 (>= 2.15), libgcc1 (>= 1:4.1.1), liblinear1 (>= 1.6), liblua5.2-0, libpcap0.8 (>= 0.9.8), libpcre3, libssl1.0.0 (>= 1.0.0), libstdc++6 (>= 4.6), python:any" --provides "ndiff" -y >> $LOG 2>&1;
+           then log_end_msg 0 else log_end_msg 1
+        fi
+    fi
+fi
