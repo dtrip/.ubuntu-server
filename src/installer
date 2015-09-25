@@ -23,6 +23,18 @@ I=0
 DIR=$(dirname $(readlink -e $0)) 
 PWD=$(pwd)
 
+
+if [ ! which git ]; then
+    log_daemon_msg "Installing git from apt sources"
+    if apt-get -y -q install git; then
+        log_end_msg 0
+    else
+        log_end_msg 1
+        exit 1
+    fi
+fi 
+
+
 log_daemon_msg "Checking out repository"
 if git clone -q https://github.com/dtrip/.ubuntu-server $LOC;
 then
