@@ -24,8 +24,7 @@ DIR=$(dirname $(readlink -e $0))
 PWD=$(pwd)
 
 log_daemon_msg "Checking out repository"
-# if git clone -q https://github.com/dtrip/.ubuntu-server /usr/local/src/.ubuntu-server;
-if  logger 'test';
+if git clone -q https://github.com/dtrip/.ubuntu-server $LOC;
 then
         log_end_msg 0 
     else
