@@ -24,7 +24,7 @@ DIR=$(dirname $(readlink -e $0))
 PWD=$(pwd)
 
 
-if [ ! which git ]; then
+if [[ ! which git ]]; then
     log_daemon_msg "Installing git from apt sources"
     if apt-get -y -q install git; then
         log_end_msg 0
