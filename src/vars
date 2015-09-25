@@ -8,7 +8,6 @@
 # and status_of_proc is working.
 . /lib/lsb/init-functions
 
-source functions
 
 # Ubuntu's short release version name: trusty, utopic, etc..
 REL=$(lsb_release -cs)
@@ -18,6 +17,9 @@ VER=$(lsb_release -sr)
 
 # gets path of file being executed
 DIR=$(dirname $(readlink -e $0))
+
+
+source $DIR/src/functions
 
 PWD=$(pwd)
 

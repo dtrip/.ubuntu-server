@@ -45,11 +45,11 @@ if apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 437D05B5 3E5C1192 >>
 fi
 
 log_daemon_msg "Adding key for tor"
-if gpg --keyserver keys.gnupg.net --recv 886DDD89 >> $LOG && gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | sudo apt-key add - >> $LOG 2>&1;
+if gpg --keyserver keys.gnupg.net --recv 886DDD89 >> $LOG && gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | apt-key add - >> $LOG 2>&1;
     then log_end_msg 0 else log_end_msg 1
 fi
 
-
+#TODO test these functions
 ## setup default apt config stuff
 log_daemon_msg "Setting potsfix default hostname: $HOSTNAME"
 if debconf-set-selections <<< "postfix postfix/mailname string $HOSTNAME" >> $LOG 2>&1; 
@@ -65,17 +65,17 @@ fi
 # log_daemon_msg "Installing packages from Ubuntu Repositories... "
 
 log_daemon_msg "Updating package list"
-if sudo apt-get -qq -y update >> $LOG 2>&1;
+if apt-get -qq -y update >> $LOG 2>&1;
     then log_end_msg 0 else log_end_msg 1
 fi
 
 log_daemon_msg "Installing packages"
-if sudo apt-get install -qq -y $PKG >> $LOG 2>&1;
+if apt-get install -qq -y $PKG >> $LOG 2>&1;
     then log_end_msg 0 else log_end_msg 1
 fi
 
 log_daemon_msg "Installing python pip packages"
-if sudo pip -q install $PIP >> $LOG 2>&1;
+if pip -q install $PIP >> $LOG 2>&1;
     then log_end_msg 0 else log_end_msg 1
 fi
 
@@ -85,7 +85,7 @@ do
     # if folder does not exist, will checkout
     if [[ ! -d ${GIT["$GITURL"]} ]]; then
         log_daemon_msg "Cloning $GITURL into ${GIT["$GITURL"]}"
-        if sudo git clone -q $GITURL "${GIT["$GITURL"]}" >> $LOG 2>&1;
+        if git clone -q $GITURL "${GIT["$GITURL"]}" >> $LOG 2>&1;
             then log_end_msg 0 else log_end_msg 1
         fi
     fi
@@ -103,6 +103,8 @@ if [ ! -z "$UNAME" ]; then
     if adduser $UNAME >> $LOG 2>&1;
         then log_end_msg 0 else log_end_msg 1
     fi
+
+    # TODO /etc/sudoers with new user
 fi
 
 log_daemon_msg "Setting up ruby-build"
@@ -157,10 +159,8 @@ if [ "$MSF" = 'Y' ] || [ "$MSF" = 'YES' ] || [ -z $MSF ]; then
 fi
 
 exec $DIR/src/ufw $SSHPort
-
 exec $DIR/src/bins
 
 cd $PWD
 
 echo "Finished! Please switch to new user and run second half of setup!\nExample: bash $DIR/2-setup-user"
-exit 0
