@@ -8,6 +8,8 @@
 # and status_of_proc is working.
 . /lib/lsb/init-functions
 
+source functions
+
 # Ubuntu's short release version name: trusty, utopic, etc..
 REL=$(lsb_release -cs)
 
@@ -19,9 +21,11 @@ DIR=$(dirname $(readlink -e $0))
 
 PWD=$(pwd)
 
+BINPATH=/usr/local/bin
 SSHD="/etc/ssh/sshd_config"
 LOG="/tmp/ubuntu-server-setup"
 UNAME=$(whoami)
+HOSTNAME=$(hostname)
 
 # ensures log files are created and writable
 touch $LOG

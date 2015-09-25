@@ -1,0 +1,31 @@
+#!/bin/bash
+
+DIR=$(dirname $(readlink -e $0)) 
+source $DIR/vars
+
+checkRoot
+
+BASEDIR=$(dirname $DIR)
+
+for file in $BASEDIR/bin/*; do
+        FILENAME=$(basename $file)
+
+        # checks if the file exists already if not copies bin
+        if [ ! -e $BINPATH/$FILENAME ]; then
+            log_daemon_msg "Copying $FILENAME to $BINPATH"
+            if cp -f $file $BINPATH >> $LOG 2>&1; then
+                log_end_msg 0
+
+                # sets permissions to allow otheres to execute
+                log_daemon_msg "Setting $FILENAME permissions 755"
+                if chmod 755 $BINPATH/$FILENAME >> $LOG 2>&1;
+                    then log_end_msg 0 else log_end_msg 1
+                fi
+
+            else
+                log_end_msg 1
+            fi
+        fi
+done
+
+exit 0

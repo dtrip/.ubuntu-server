@@ -3,29 +3,35 @@
 DIR=$(dirname $(readlink -e $0)) 
 source $DIR/src/vars
 
-log_daemon_msg "Checking if root"
-if [[ $EUID -ne 0 ]]; then
-    log_failure_msg "This script must be run as root" 
-    exit 1
-else
-    log_daemon_msg 0
-fi
+# help stop prompts from apt-get 
+export DEBIAN_FRONTEND=noninteractive
+
+
+checkRoot
+
+# log_daemon_msg "Checking if root"
+# if [[ $EUID -ne 0 ]]; then
+#     log_failure_msg "This script must be run as root" 
+#     exit 1
+# else
+#     log_daemon_msg 0
+# fi
 
 printf "\nPlease enter country code for apt sources.list [us]: "
 read CCODE
 
 log_daemon_msg "backing up apt source file"
-if cp /etc/apt/sources.list /etc/apt/sources.list.bak >> $LOG;
+if cp /etc/apt/sources.list /etc/apt/sources.list.bak >> $LOG 2>&1;
     then log_end_msg 0 else log_end_msg 1
 fi
 
 log_daemon_msg "Copying new sources.list template file..."
-if cp -f $DIR/templates/sources.list.tmpl /etc/apt/sources.list >> $LOG;
+if cp -f $DIR/templates/sources.list.tmpl /etc/apt/sources.list >> $LOG 2>&1;
     then log_end_msg 0 else log_end_msg 1
 fi
 
 log_daemon_msg "Setting up sources file"
-if sed -i "s#<COUNTRY_CODE>#$CCODE#" /etc/apt/sources.list >> $LOG && sed -i "s#<DISTRO>#$REL#" /etc/apt/sources.list >> $LOG;
+if sed -i "s#<COUNTRY_CODE>#$CCODE#" /etc/apt/sources.list >> $LOG && sed -i "s#<DISTRO>#$REL#" /etc/apt/sources.list >> $LOG 2>&1;
     then
         log_end_msg 0
     else
@@ -34,29 +40,42 @@ if sed -i "s#<COUNTRY_CODE>#$CCODE#" /etc/apt/sources.list >> $LOG && sed -i "s#
 fi
 
 log_daemon_msg "Adding apt key"
-if apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 437D05B5 3E5C1192 >> $LOG;
+if apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 437D05B5 3E5C1192 >> $LOG 2>&1;
     then log_end_msg 0 else log_end_msg 1
 fi
 
 log_daemon_msg "Adding key for tor"
-if gpg --keyserver keys.gnupg.net --recv 886DDD89 >> $LOG && gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | sudo apt-key add - >> $LOG;
+if gpg --keyserver keys.gnupg.net --recv 886DDD89 >> $LOG && gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | sudo apt-key add - >> $LOG 2>&1;
     then log_end_msg 0 else log_end_msg 1
 fi
+
+
+## setup default apt config stuff
+log_daemon_msg "Setting potsfix default hostname: $HOSTNAME"
+if debconf-set-selections <<< "postfix postfix/mailname string $HOSTNAME" >> $LOG 2>&1; 
+    then log_end_msg 0 else log_end_msg 1
+fi
+
+log_daemon_msg "Setting postfix to type: Internet Site"
+if debconf-set-selections <<< "postfix postfix/main_mailer_type string 'Internet Site'" >> $LOG 2>&1;
+    then log_end_msg 0 else log_end_msg 1
+fi
+
 
 # log_daemon_msg "Installing packages from Ubuntu Repositories... "
 
 log_daemon_msg "Updating package list"
-if sudo apt-get -qq -y update >> $LOG;
+if sudo apt-get -qq -y update >> $LOG 2>&1;
     then log_end_msg 0 else log_end_msg 1
 fi
 
 log_daemon_msg "Installing packages"
-if sudo apt-get install -qq -y $PKG >> $LOG;
+if sudo apt-get install -qq -y $PKG >> $LOG 2>&1;
     then log_end_msg 0 else log_end_msg 1
 fi
 
 log_daemon_msg "Installing python pip packages"
-if sudo pip -q install $PIP >> $LOG;
+if sudo pip -q install $PIP >> $LOG 2>&1;
     then log_end_msg 0 else log_end_msg 1
 fi
 
@@ -66,7 +85,7 @@ do
     # if folder does not exist, will checkout
     if [[ ! -d ${GIT["$GITURL"]} ]]; then
         log_daemon_msg "Cloning $GITURL into ${GIT["$GITURL"]}"
-        if sudo git clone -q $GITURL "${GIT["$GITURL"]}" >> $LOG;
+        if sudo git clone -q $GITURL "${GIT["$GITURL"]}" >> $LOG 2>&1;
             then log_end_msg 0 else log_end_msg 1
         fi
     fi
@@ -81,19 +100,19 @@ read UNAME
 
 if [ ! -z "$UNAME" ]; then
     log_daemon_msg "Creating new user $UNAME ..."
-    if adduser $UNAME >> $LOG;
+    if adduser $UNAME >> $LOG 2>&1;
         then log_end_msg 0 else log_end_msg 1
     fi
 fi
 
 log_daemon_msg "Setting up ruby-build"
-if sh /usr/local/share/ruby-build/install.sh >> $LOG;
+if sh /usr/local/share/ruby-build/install.sh >> $LOG 2>&1;
     then log_end_msg 0 else log_end_msg 1
 fi
 
 log_daemon_msg "Downloading ufonet zombies"
-if python /usr/local/share/ufonet/ufonet/ufonet --download-zombies >> $LOG;
-if sh /usr/local/share/ruby-build/install.sh >> $LOG;
+if python /usr/local/share/ufonet/ufonet/ufonet --download-zombies >> $LOG 2>&1;
+if sh /usr/local/share/ruby-build/install.sh >> $LOG 2>&1;
     then log_end_msg 0 else log_end_msg 1
 fi
 
@@ -112,7 +131,7 @@ if [ "$MSF" = 'Y' ] || [ "$MSF" = 'YES' ] || [ -z $MSF ]; then
     cd $MSFPATH;
 
     log_daemon_msg "Installing ruby v$MSFRVERSION for Metasploit"
-    if rbenv install $MSFRVERSION >> $LOG;
+    if rbenv install $MSFRVERSION >> $LOG 2>&1;
         then log_end_msg 0 else log_end_msg 1
     fi
 
@@ -122,22 +141,24 @@ if [ "$MSF" = 'Y' ] || [ "$MSF" = 'YES' ] || [ -z $MSF ]; then
     fi
 
     log_daemon_msg "Installing bundler"
-    if gem install bundler >> $LOG;
+    if gem install bundler >> $LOG 2>&1;
         then log_end_msg 0 else log_end_msg 1
     fi
 
     log_daemon_msg "Installing Metasploit gems"
-    if bundle install >> $LOG;
+    if bundle install >> $LOG 2>&1;
         then log_end_msg 0 else log_end_msg 1
     fi
 
     log_daemon_msg "Setting up local bins for MSF"
-    if bash -c 'for MSF in $(ls msf*); do ln -s /usr/local/share/metasploit-framework/$MSF /usr/local/bin/$MSF;done' >> $LOG;
+    if bash -c 'for MSF in $(ls msf*); do ln -s /usr/local/share/metasploit-framework/$MSF /usr/local/bin/$MSF;done' >> $LOG 2>&1;
         then log_end_msg 0 else log_end_msg 1
     fi
 fi
 
 exec $DIR/src/ufw $SSHPort
+
+exec $DIR/src/bins
 
 cd $PWD
 

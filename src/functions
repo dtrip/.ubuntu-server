@@ -1,0 +1,15 @@
+#!/bin/bash
+# functions for setup process
+#
+
+function checkRoot {
+     
+    log_daemon_msg "Checking if root"
+    if [[ $EUID -ne 0 ]]; then
+        log_failure_msg "This script must be run as root" 
+        exit 1
+    else
+        log_daemon_msg 0
+    fi
+ 
+}
