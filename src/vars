@@ -21,7 +21,7 @@ DIR=$(dirname $(readlink -e $0))
 
 PWD=$(pwd)
 
-BINPATH=/usr/local/bin
+BINPATH="/usr/local/bin"
 SSHD="/etc/ssh/sshd_config"
 LOG="/tmp/ubuntu-server-setup"
 UNAME=$(whoami)
