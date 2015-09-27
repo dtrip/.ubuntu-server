@@ -1,0 +1,3 @@
+#!/bin/bash
+
+python /usr/local/share/weevely3/weevely.py $@

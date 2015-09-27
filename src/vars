@@ -48,6 +48,7 @@ GIT=(
     ['https://github.com/dtrip/sqlmap']='/usr/local/share/sqlmap'
     ['https://github.com/dtrip/metasploit-framework']=$MSFPATH
     ['https://github.com/dtrip/commix']='/usr/local/share/commix'
+    ['https://github.com/dtrip/weevely3']='/usr/local/share/weevely3'
     ['https://github.com/dtrip/websploit']='/usr/local/share/websploit'
     ['https://github.com/sstephenson/rbenv.git']='/usr/local/share/rbenv'
     ['https://github.com/wpscanteam/wpscan.git']='/usr/local/share/wpscan'
