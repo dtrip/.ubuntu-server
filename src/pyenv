@@ -3,8 +3,23 @@
 DIR=$(dirname $(readlink -e $0)) 
 source $DIR/vars
 
-log_daemon_msg "setting up pyenv-install"
-if curl -L https://raw.githubusercontent.com/yyuu/pyenv-installer/master/bin/pyenv-installer | sudo bash;
-    then log_end_msg 0 else log_end_msg 1
-fi
+# pyenv() {
 
+# log_daemon_msg "setting up pyenv-install"
+# if curl -L https://raw.githubusercontent.com/yyuu/pyenv-installer/master/bin/pyenv-installer | sudo bash;
+#     then log_end_msg 0 else log_end_msg 1
+# fi
+
+
+# Clones pyenv github  URL's
+for GITURL in "${!PYENVGIT[@]}";
+do
+    # if folder does not exist, will checkout
+    if [[ ! -d ${PYENVGIT["$GITURL"]} ]]; then
+        log_daemon_msg "Cloning $GITURL into ${PYENVGIT["$GITURL"]}"
+        if git clone -q $GITURL "${PYENVGIT["$GITURL"]}" >> $LOG 2>&1;
+            then log_end_msg 0 else log_end_msg 1
+        fi
+    fi
+done
+# }

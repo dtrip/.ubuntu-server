@@ -84,6 +84,8 @@ if sh ~/.vim/install >> $LOG 2>&1;
     then log_end_msg 0 else log_end_msg 1
 fi
 
+exec $DIR/src/pyenv
+
 hash -r
 $SHELL
 

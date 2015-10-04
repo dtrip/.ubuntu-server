@@ -13,7 +13,7 @@ eval "$(rbenv init -)"
 #checks if ruby group exists - creates if not
 if [ -z $(egrep -i "^$RUBYGROUP" /etc/group) ]; then
     log_daemon_msg "Creating ruby group"
-    if addgroup ruby >> $LOG;
+    if addgroup ruby >> $LOG 2>&1;
         then log_end_msg 0 else log_end_msg 1
     fi
 fi
@@ -27,21 +27,16 @@ if [ -z $RUBYV ]; then
 fi
 
 log_daemon_msg "Installing ruby v${RUBYV}..."
-if rbenv install $RUBYV >> $LOG;
+if rbenv install $RUBYV >> $LOG 2>&1;
     then log_end_msg 0 else log_end_msg 1
 fi
 
 log_daemon_msg "setting global ruby version to ${RUBYV}..."
-if rbenv global $RUBYV >> $LOG;
+if rbenv global $RUBYV >> $LOG 2>&1;
     then log_end_msg 0 else log_end_msg 1
 fi
 
 log_daemon_msg "rbenv rehashing..."
-if rbenv rehash >> $LOG;
+if rbenv rehash >> $LOG 2>&1;
     then log_end_msg 0 else log_end_msg 1
 fi
-
-
-# usermod USERNAME -aG ruby
-# newgrp ruby
-

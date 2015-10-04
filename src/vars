@@ -37,6 +37,7 @@ MSFPATH='/usr/local/share/metasploit-framework'         # location of metapsploi
 NMAPPATH='/usr/local/share/nmap'                        # location of nmap installation
 MSFRVERSION='2.1.6'                                     # ruby version to install for metapsloit
 
+PYENV_ROOT="${HOME}/.pyenv"
 NMAPURL='https://svn.nmap.org/nmap-releases/nmap-6.47/' # SVN URL of nmap
 
 # declares associative array
@@ -54,6 +55,17 @@ GIT=(
     ['https://github.com/wpscanteam/wpscan.git']='/usr/local/share/wpscan'
     ['https://github.com/sstephenson/ruby-build.git']='/usr/local/share/ruby-build'
     ['https://github.com/Anonymous-Dev/Pyloris.git']='/usr/local/share/pyloris'
+    ['https://github.com/rofl0r/proxychains-ng.git']='/usr/local/share/proxychains-ng'
+)
+
+declare -A PYENVGIT
+PYENVGIT=(
+    ["https://github.com/yyuu/pyenv.git"]="${PYENV_ROOT}"
+    ["https://github.com/yyuu/pyenv-doctor.git"]="${PYENV_ROOT}/plugins/pyenv-doctor"
+    ["https://github.com/yyuu/pyenv-installer.git"]="${PYENV_ROOT}/plugins/pyenv-installer"
+    ["https://github.com/yyuu/pyenv-update.git"]="${PYENV_ROOT}/plugins/pyenv-update"
+    ["https://github.com/yyuu/pyenv-virtualenv.git"]="${PYENV_ROOT}/plugins/pyenv-virtualenv"
+    ["https://github.com/yyuu/pyenv-which-ext.git"]="${PYENV_ROOT}/plugins/pyenv-which-ext"
 )
 
 # SVN repo's root user will checkout and or isntall
@@ -72,12 +84,13 @@ USERGIT=(
     ['https://github.com/dtrip/vim']='~/.vim'
     ['https://github.com/dtrip/tmux']='~/tmux'
     ['https://github.com/dtrip/zshrc']='~/zshrc'
+    ['https://github.com/dtrip/powerline']='~/.config/powerline'
     ['https://github.com/dtrip/powerline-shell']='~/powerline-shell'
 )
 
 
 PKG='vim tmux python-pip build-essential libpcap-dev libssl-dev git git-extras git-core ack-grep libyaml-dev libreadline-dev libsqlite3-dev freetds-dev freetds-bin libpq-dev libpcre3-dev libpqxx-dev liblinear-dev subversion dnsutils autoconf libbison-dev htop fail2ban zsh trash-cli iptraf iftop nethogs chkrootkit rkhunter python-dev python-pycurl libbz2-dev'
-PIP='powerline-status netifaces slowloris'
+PIP='powerline-status netifaces slowloris virtualenv'
 
 #name of group for ruby users
 RUBYGROUP='ruby'

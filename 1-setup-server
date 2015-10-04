@@ -78,7 +78,7 @@ if pip -q install $PIP >> $LOG 2>&1;
     then log_end_msg 0 else log_end_msg 1
 fi
 
-# Clones girl URL's
+# Clones git URL's
 for GITURL in "${!GIT[@]}";
 do
     # if folder does not exist, will checkout
@@ -114,7 +114,27 @@ if [ ! -z "$UNAME" ]; then
         then log_end_msg 0 else log_end_msg 1
     fi
 
-    # TODO /etc/sudoers with new user
+    if [[ ! -d /home/$UNAME ]]; then
+        log_daemon_msg "Creating home folder for $UNAME"
+        if mkdir -p /home/$UNAME >> $LOG 2>&1;
+            then log_end_msg 0 else log_end_msg 1
+        fi
+    fi
+
+    log_daemon_msg "Setting home folder owner for $UNAME"
+    if chown $UNAME:$UNAME -R /home/$UNAME >> $LOG 2>&1; 
+        then log_end_msg 0 else log_end_msg 1
+    fi
+
+    log_daemon_msg "Setting $UNAME home folder permissions"
+    if chmod g+s /home/$UNAME >> $LOG 2>&1;
+        then log_end_msg 0 else log_end_msg 1
+    fi
+
+    log_daemon_msg "Add $UNAME to sudoers"
+    if echo "${UNAME} ALL=(ALL:ALL) ALL" | (EDITOR="tee -a" visudo) >> $LOG 2>&1;
+        then log_end_msg 0 else log_end_msg 1
+    fi
 fi
 
 log_daemon_msg "Setting up ruby-build"
@@ -124,7 +144,6 @@ fi
 
 log_daemon_msg "Downloading ufonet zombies"
 if python /usr/local/share/ufonet/ufonet/ufonet --download-zombies >> $LOG 2>&1;
-if sh /usr/local/share/ruby-build/install.sh >> $LOG 2>&1;
     then log_end_msg 0 else log_end_msg 1
 fi
 
@@ -148,7 +167,7 @@ if [ "$MSF" = 'Y' ] || [ "$MSF" = 'YES' ] || [ -z $MSF ]; then
     fi
 
     log_daemon_msg "Setting version $MSFRVERSION as local version for metasploit through rbenv"
-    if rbenv local $MSFRVERSION;
+    if rbenv local $MSFRVERSION >> $LOG 2>&1;
         then log_end_msg 0 else log_end_msg 1
     fi
 
@@ -171,7 +190,6 @@ fi
 exec $DIR/src/nmap
 exec $DIR/src/ufw $SSHPort
 exec $DIR/src/bins
-
 cd $PWD
 
 echo "Finished! Please switch to new user and run second half of setup!\nExample: bash $DIR/2-setup-user"
