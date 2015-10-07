@@ -1,0 +1,4 @@
+#!/bin/sh
+export TERM=xterm-256color;
+man $1;
+export TERM=screen-256color;
