@@ -12,7 +12,7 @@
 LOC=/usr/local/src/.ubuntu-server
 
 log_daemon_msg "Checking if root"
-if [ $EUID -ne 0 ]; then
+if [[ $EUID -ne 0 ]]; then
     log_failure_msg "This script must be run as root" 
     exit 1
 else
@@ -26,7 +26,7 @@ PWD=$(pwd)
 
 if [[ ! $(which git) ]]; then
     log_daemon_msg "Installing git from apt sources"
-    if apt-get -y -q install git; then
+    if apt-get -y -qq --force-yes install git; then
         log_end_msg 0
     else
         log_end_msg 1
@@ -64,4 +64,4 @@ do
 done
 
 cd $LOC
-bash $LOC/1-setup-server &
+bash $LOC/setup &

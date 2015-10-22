@@ -25,13 +25,16 @@ if cp /etc/apt/sources.list /etc/apt/sources.list.bak >> $LOG 2>&1;
     then log_end_msg 0 else log_end_msg 1
 fi
 
+wait
+
 log_daemon_msg "Copying new sources.list template file..."
 if cp -f $DIR/templates/sources.list.tmpl /etc/apt/sources.list >> $LOG 2>&1;
     then log_end_msg 0 else log_end_msg 1
 fi
 
-log_daemon_msg "Setting up sources file"
-if sed -i "s#<COUNTRY_CODE>#$CCODE#" /etc/apt/sources.list >> $LOG && sed -i "s#<DISTRO>#$REL#" /etc/apt/sources.list >> $LOG 2>&1;
+
+log_daemon_msg "Setting up sources file (country) "
+if sed -i "s#<COUNTRY_CODE>#$CCODE#" /etc/apt/sources.list >> $LOG 2>&1;
     then
         log_end_msg 0
     else
@@ -39,24 +42,40 @@ if sed -i "s#<COUNTRY_CODE>#$CCODE#" /etc/apt/sources.list >> $LOG && sed -i "s#
         exit 1
 fi
 
+log_daemon_msg "Setting distro in source file"
+if sed -i "s#<DISTRO>#$REL#" /etc/apt/sources.list >> $LOG 2>&1;
+    then
+        log_end_msg 0
+    else
+        log_failure_msg "Up-to-date Apt sources is required"
+        exit 1
+fi
+
+
 log_daemon_msg "Adding apt key"
 if apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 437D05B5 3E5C1192 >> $LOG 2>&1;
     then log_end_msg 0 else log_end_msg 1
 fi
 
 log_daemon_msg "Adding key for tor"
-if gpg --keyserver keys.gnupg.net --recv 886DDD89 >> $LOG 2>&1 && gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | apt-key add - >> $LOG 2>&1;
+if sh -c 'gpg --keyserver keys.gnupg.net --recv 886DDD89' >> $LOG 2>&1;
     then log_end_msg 0 else log_end_msg 1
 fi
 
+log_daemon_msg "more tor keys"
+if sh -c 'gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | apt-key add -' >> $LOG 2>&1;
+    then log_end_msg 0 else log_end_msg 1
+fi
+
+
 ## setup default apt config stuff
 log_daemon_msg "Setting potsfix default hostname: $HOSTNAME"
-if debconf-set-selections <<< "postfix postfix/mailname string $HOSTNAME" >> $LOG 2>&1; 
+if sh -c 'debconf-set-selections <<< "postfix postfix/mailname string $HOSTNAME"' >> $LOG 2>&1; 
     then log_end_msg 0 else log_end_msg 1
 fi
 
 log_daemon_msg "Setting postfix to type: Internet Site"
-if debconf-set-selections <<< "postfix postfix/main_mailer_type string 'Internet Site'" >> $LOG 2>&1;
+if 'debconf-set-selections <<< "postfix postfix/main_mailer_type string '\''Internet Site'\''"' >> $LOG 2>&1;
     then log_end_msg 0 else log_end_msg 1
 fi
 
@@ -64,12 +83,12 @@ fi
 # log_daemon_msg "Installing packages from Ubuntu Repositories... "
 
 log_daemon_msg "Updating package list"
-if apt-get -qq -y update >> $LOG 2>&1;
+if apt-get -qq -y --force-yes update >> $LOG 2>&1;
     then log_end_msg 0 else log_end_msg 1
 fi
 
 log_daemon_msg "Installing packages"
-if apt-get install -qq -y $PKG >> $LOG 2>&1;
+if apt-get -qq -y --force-yes install $PKG >> $LOG 2>&1;
     then log_end_msg 0 else log_end_msg 1
 fi
 
@@ -102,6 +121,8 @@ do
     fi  
 done
 
+
+wait
 # refresh shell right quick
 # $SHELL
 
@@ -109,9 +130,8 @@ printf "\nPlease enter your username to create new user - leave blank to skip: "
 read UNAME
 
 if [ ! -z "$UNAME" ]; then
-    #TODO auto make prompts when creating a user
     log_daemon_msg "Creating new user $UNAME ..."
-    if adduser $UNAME >> $LOG 2>&1;
+    if adduser --gecos --disabled-password $UNAME >> $LOG 2>&1;
         then log_end_msg 0 else log_end_msg 1
     fi
 
@@ -122,18 +142,8 @@ if [ ! -z "$UNAME" ]; then
         fi
     fi
 
-    log_daemon_msg "Setting home folder owner for $UNAME"
-    if chown $UNAME:$UNAME -R /home/$UNAME >> $LOG 2>&1; 
-        then log_end_msg 0 else log_end_msg 1
-    fi
-
-    log_daemon_msg "Setting $UNAME home folder permissions"
-    if chmod g+s /home/$UNAME >> $LOG 2>&1;
-        then log_end_msg 0 else log_end_msg 1
-    fi
-
     log_daemon_msg "Add $UNAME to sudoers"
-    if echo "${UNAME} ALL=(ALL:ALL) ALL" | (EDITOR="tee -a" visudo) >> $LOG 2>&1;
+    if sh -c 'echo "${UNAME} ALL=(ALL:ALL) ALL" | (EDITOR="tee -a" visudo)' >> $LOG 2>&1;
         then log_end_msg 0 else log_end_msg 1
     fi
 fi
@@ -144,7 +154,7 @@ if sh /usr/local/share/ruby-build/install.sh >> $LOG 2>&1;
 fi
 
 log_daemon_msg "Downloading ufonet zombies"
-if python /usr/local/share/ufonet/ufonet/ufonet --download-zombies >> $LOG 2>&1;
+if python /usr/local/share/ufonet/ufonet/ufonet --force-yes --download-zombies >> $LOG 2>&1;
     then log_end_msg 0 else log_end_msg 1
 fi
 
@@ -152,7 +162,7 @@ fi
 printf "\nEnter port number for SSH server [22]: "
 read SSHPort
 
-exec $DIR/src/ssh $SSHPort
+exec $DIR/src/ssh $SSHPort &
 
 printf "\nWould you like to install Metasploit? [Y/n]: "
 read MSF
@@ -188,9 +198,60 @@ if [ "$MSF" = 'Y' ] || [ "$MSF" = 'YES' ] || [ -z $MSF ]; then
     fi
 fi
 
-exec $DIR/src/nmap
-exec $DIR/src/ufw $SSHPort
-exec $DIR/src/bins
+exec $DIR/src/nmap &
+exec $DIR/src/ufw $SSHPort &
+exec $DIR/src/bin &
 cd $PWD
 
-echo "Finished! Please switch to new user and run second half of setup!\nExample: bash $DIR/2-setup-user"
+
+if [[ -z $UNAME ]]; then
+
+    export HOME=/home/$UNAME
+
+    cd /home/$UNAME
+
+    for GITURL in "${!USERGIT[@]}";
+    do
+        # if folder does not exist, will checkout
+        if [[ ! -d ${USERGIT["$GITURL"]} ]]; then
+            log_daemon_msg "Cloning $GITURL into ${USERGIT["$GITURL"]}"
+            if git clone -q $GITURL "${USERGIT["$GITURL"]}" >> $LOG 2>&1;
+                then log_end_msg 0 else log_end_msg 1
+            fi
+        fi
+    done
+
+    exec $DIR/src/pyenv &
+
+    if su dtrip -c 'setopt EXTENDED_GLOB'
+    for rcfile in "${ZDOTDIR:-$HOME}"/.zprezto/runcoms/^README.md(.N); do
+          ln -s "$rcfile" "${ZDOTDIR:-$HOME}/.${rcfile:t}"
+    done
+
+    cd $PWD
+
+    log_daemon_msg "Setting home folder owner for $UNAME"
+    if chown $UNAME:$UNAME -R /home/$UNAME >> $LOG 2>&1; 
+        then log_end_msg 0 else log_end_msg 1
+    fi
+
+    log_daemon_msg "Setting $UNAME home folder permissions"
+    if chmod g+s /home/$UNAME >> $LOG 2>&1;
+        then log_end_msg 0 else log_end_msg 1
+    fi
+
+    log_daemon_msg "Setting up tmux env"
+    if sh ${HOME}/tmux/install >> $LOG 2>&1;
+        then log_end_msg 0 else log_end_msg 1
+    fi
+
+    log_daemon_msg "Running vim setup"
+    if sh ${HOME}/.vim/install >> $LOG 2>&1; 
+        then log_end_msg 0 else log_end_msg 1
+    fi
+
+fi
+
+echo "\nSuccess! Setup complete\nDont forget to set $UNAME's new password"
+echo "Example (as root):\n\tpasswd dtrip"
+exit 0

@@ -1,0 +1,13 @@
+#!/bin/bash
+
+DIR=$(dirname $(readlink -e $0)) 
+source $DIR/src/vars
+
+
+
+hash -r
+$SHELL
+
+
+echo "Setup is now complete!! You should probably reboot"
+exit 0

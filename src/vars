@@ -35,7 +35,7 @@ chmod 666 $LOG
 
 MSFPATH='/usr/local/share/metasploit-framework'         # location of metapsploit installation
 NMAPPATH='/usr/local/share/nmap'                        # location of nmap installation
-MSFRVERSION='2.1.6'                                     # ruby version to install for metapsloit
+MSFRVERSION='2.1.7'                                     # ruby version to install for metapsloit
 
 PYENV_ROOT="${HOME}/.pyenv"
 NMAPURL='https://svn.nmap.org/nmap-releases/nmap-6.47/' # SVN URL of nmap
@@ -66,6 +66,7 @@ PYENVGIT=(
     ["https://github.com/yyuu/pyenv-update.git"]="${PYENV_ROOT}/plugins/pyenv-update"
     ["https://github.com/yyuu/pyenv-virtualenv.git"]="${PYENV_ROOT}/plugins/pyenv-virtualenv"
     ["https://github.com/yyuu/pyenv-which-ext.git"]="${PYENV_ROOT}/plugins/pyenv-which-ext"
+    ["https://github.com/dtrip/prezto.git"]="${HOME}/prezto"
 )
 
 # SVN repo's root user will checkout and or isntall
@@ -89,7 +90,7 @@ USERGIT=(
 )
 
 
-PKG='vim tmux python-pip build-essential libpcap-dev libssl-dev git git-extras git-core ack-grep libyaml-dev libreadline-dev libsqlite3-dev freetds-dev freetds-bin libpq-dev libpcre3-dev libpqxx-dev liblinear-dev subversion dnsutils autoconf libbison-dev htop fail2ban zsh trash-cli iptraf iftop nethogs chkrootkit rkhunter python-dev python-pycurl libbz2-dev'
+PKG='vim tmux python-pip build-essential libpcap-dev libssl-dev git git-extras git-core ack-grep libyaml-dev libreadline-dev libsqlite3-dev sqlite3 freetds-dev freetds-bin libpq-dev libpcre3-dev libpqxx-dev liblinear-dev subversion dnsutils autoconf libbison-dev htop fail2ban zsh trash-cli iptraf iftop nethogs chkrootkit rkhunter python-dev python-pycurl libbz2-dev ruby-dev libio-socket-ssl-perl libnetpacket-perl libnet-pcap-perl libnet-rawip-perl libnet-dns-perl libdbd-sqlite3-perl libdbd-sqlite-perl'
 PIP='powerline-status netifaces slowloris virtualenv pycurl wafw00f'
 
 #name of group for ruby users
