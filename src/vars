@@ -90,7 +90,7 @@ USERGIT=(
 )
 
 
-PKG='vim tmux python-pip build-essential libpcap-dev libssl-dev git git-extras git-core ack-grep libyaml-dev libreadline-dev libsqlite3-dev sqlite3 freetds-dev freetds-bin libpq-dev libpcre3-dev libpqxx-dev liblinear-dev subversion dnsutils autoconf libbison-dev htop fail2ban zsh trash-cli iptraf iftop nethogs chkrootkit rkhunter python-dev python-pycurl libbz2-dev ruby-dev libio-socket-ssl-perl libnetpacket-perl libnet-pcap-perl libnet-rawip-perl libnet-dns-perl libdbd-sqlite3-perl libdbd-sqlite-perl'
+PKG='vim tmux python-pip build-essential libpcap-dev libssl-dev git git-extras git-core ack-grep libyaml-dev libreadline-dev libsqlite3-dev sqlite3 freetds-dev freetds-bin libpq-dev libpcre3-dev libpqxx-dev liblinear-dev subversion dnsutils autoconf libbison-dev htop fail2ban zsh trash-cli iptraf iftop nethogs chkrootkit rkhunter python-dev python-pycurl libbz2-dev ruby-dev libio-socket-ssl-perl libnetpacket-perl libnet-pcap-perl libnet-rawip-perl libnet-dns-perl libdbd-sqlite3-perl libdbd-sqlite-perl ctags'
 PIP='powerline-status netifaces slowloris virtualenv pycurl wafw00f'
 
 #name of group for ruby users
