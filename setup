@@ -21,14 +21,14 @@ printf "\nPlease enter country code for apt sources.list [us]: "
 read CCODE
 
 log_daemon_msg "backing up apt source file"
-if cp /etc/apt/sources.list /etc/apt/sources.list.bak >> $LOG 2>&1 &;
+if sh -c 'cp -f /etc/apt/sources.list /etc/apt/sources.list.bak' >> $LOG 2>&1 &;
     then log_end_msg 0 else log_end_msg 1
 fi
 
 wait
 
 log_daemon_msg "Copying new sources.list template file..."
-if cp -f $DIR/templates/sources.list.tmpl /etc/apt/sources.list >> $LOG 2>&1 &;
+if sh -c 'cp -f $DIR/templates/sources.list.tmpl /etc/apt/sources.list' >> $LOG 2>&1 &;
     then log_end_msg 0 else log_end_msg 1
 fi
 
