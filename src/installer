@@ -25,6 +25,12 @@ PWD=$(pwd)
 
 
 if [[ ! $(which git) ]]; then
+
+    log_daemon_msg "Updating package list"
+    if apt-get -qq -y --force-yes update ;
+        then log_end_msg 0 else log_end_msg 1
+    fi
+
     log_daemon_msg "Installing git from apt sources"
     if apt-get -y -qq --force-yes install git; then
         log_end_msg 0

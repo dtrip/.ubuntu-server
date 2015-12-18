@@ -1,0 +1,83 @@
+#!/bin/bash
+
+DIR=$(dirname $(readlink -e $0)) 
+source $DIR/vars
+
+printf "\nPlease enter country code for apt sources.list [us]: "
+read CCODE
+
+log_daemon_msg "backing up apt source file"
+if sh -c 'cp -f /etc/apt/sources.list /etc/apt/sources.list.bak' >> $LOG 2>&1;
+    then log_end_msg 0 else log_end_msg 1
+fi
+
+wait
+
+log_daemon_msg "Copying new sources.list template file..."
+if sh -c 'cp -f $DIR/templates/sources.list.tmpl /etc/apt/sources.list' >> $LOG 2>&1;
+    then log_end_msg 0 else log_end_msg 1
+fi
+
+
+log_daemon_msg "Setting up sources file (country) "
+if sed -i "s#<COUNTRY_CODE>#$CCODE#" /etc/apt/sources.list >> $LOG 2>&1;
+    then
+        log_end_msg 0
+    else
+        log_failure_msg "Up-to-date Apt sources is required"
+        exit 1
+fi
+
+log_daemon_msg "Setting distro in source file"
+if sed -i "s#<DISTRO>#$REL#" /etc/apt/sources.list >> $LOG 2>&1;
+    then
+        log_end_msg 0
+    else
+        log_failure_msg "Up-to-date Apt sources is required"
+        exit 1
+fi
+
+
+log_daemon_msg "Adding apt key"
+if apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 437D05B5 3E5C1192 >> $LOG 2>&1;
+    then log_end_msg 0 else log_end_msg 1
+fi
+
+log_daemon_msg "Adding key for tor"
+if sh -c 'gpg --keyserver keys.gnupg.net --recv 886DDD89' >> $LOG 2>&1;
+    then log_end_msg 0 else log_end_msg 1
+fi
+
+log_daemon_msg "more tor keys"
+if sh -c 'gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | apt-key add -' >> $LOG 2>&1;
+    then log_end_msg 0 else log_end_msg 1
+fi
+
+
+## setup default apt config stuff
+log_daemon_msg "Setting potsfix default hostname: $HOSTNAME"
+if sh -c 'debconf-set-selections <<< "postfix postfix/mailname string $HOSTNAME"' >> $LOG 2>&1; 
+    then log_end_msg 0 else log_end_msg 1
+fi
+
+log_daemon_msg "Setting postfix to type: Internet Site"
+if 'debconf-set-selections <<< "postfix postfix/main_mailer_type string '\''Internet Site'\''"' >> $LOG 2>&1;
+    then log_end_msg 0 else log_end_msg 1
+fi
+
+
+# log_daemon_msg "Installing packages from Ubuntu Repositories... "
+
+log_daemon_msg "Updating package list"
+if apt-get -qq -y --force-yes update >> $LOG 2>&1;
+    then log_end_msg 0 else log_end_msg 1
+fi
+
+log_daemon_msg "Installing packages"
+if apt-get -qq -y --force-yes install $PKG >> $LOG 2>&1;
+    then log_end_msg 0 else log_end_msg 1
+fi
+
+
+
+

@@ -1,0 +1,9 @@
+#!/bin/bash
+
+DIR=$(dirname $(readlink -e $0)) 
+source $DIR/vars
+
+log_daemon_msg "Installing python pip packages"
+if pip -q install $PIP >> $LOG 2>&1;
+    then log_end_msg 0 else log_end_msg 1
+fi
