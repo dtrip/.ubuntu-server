@@ -20,7 +20,7 @@ else
 fi
 
 I=0
-DIR=$(dirname $(readlink -e $0)) 
+DIR=$(dirname `readlink -e -- $0`) 
 PWD=$(pwd)
 
 
