@@ -9,7 +9,7 @@ function checkRoot {
         log_failure_msg "This script must be ran as root" 
         exit 1
     else
-        log_daemon_msg 0
+        log_end_msg 0
     fi
  
 }

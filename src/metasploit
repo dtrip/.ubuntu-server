@@ -1,0 +1,40 @@
+#!/bin/bash
+
+DIR=$(dirname $(readlink -e $0)) 
+source $DIR/vars
+
+
+printf "\nWould you like to install Metasploit? [Y/n]: "
+read MSF
+
+MSF=$(echo $MSF | tr 'a-z' 'A-Z')
+
+if [ "$MSF" = 'Y' ] || [ "$MSF" = 'YES' ] || [ -z $MSF ]; then
+    cd $MSFPATH;
+
+    log_daemon_msg "Installing ruby v$MSFRVERSION for Metasploit"
+    if rbenv install $MSFRVERSION >> $LOG 2>&1;
+        then log_end_msg 0 else log_end_msg 1
+    fi
+
+    log_daemon_msg "Setting version $MSFRVERSION as local version for metasploit through rbenv"
+    if rbenv local $MSFRVERSION >> $LOG 2>&1;
+        then log_end_msg 0 else log_end_msg 1
+    fi
+
+    log_daemon_msg "Installing bundler"
+    if gem install bundler >> $LOG 2>&1;
+        then log_end_msg 0 else log_end_msg 1
+    fi
+
+    log_daemon_msg "Installing Metasploit gems"
+    if bundle install >> $LOG 2>&1;
+        then log_end_msg 0 else log_end_msg 1
+    fi
+
+    log_daemon_msg "Setting up local bins for MSF"
+    if bash -c 'for MSF in $(ls msf*); do ln -s /usr/local/share/metasploit-framework/$MSF /usr/local/bin/$MSF;done' >> $LOG 2>&1;
+        then log_end_msg 0 else log_end_msg 1
+    fi
+fi
+
